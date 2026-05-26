@@ -673,6 +673,10 @@ public class GeeraEntity extends PathfinderMob implements GeoEntity {
         return progressByPlayer.computeIfAbsent(player.getUUID(), uuid -> new PlayerProgress());
     }
 
+    public int getTrustForPlayer(UUID playerUUID) {
+        return progressByPlayer.getOrDefault(playerUUID, new PlayerProgress()).trust;
+    }
+
     private void addTrust(Player player, int amount) {
         addTrust(getProgress(player), amount);
     }

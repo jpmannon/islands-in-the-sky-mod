@@ -1476,6 +1476,10 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
         return progressByPlayer.computeIfAbsent(player.getUUID(), uuid -> new PlayerProgress());
     }
 
+    public int getTrustForPlayer(UUID playerUUID) {
+        return progressByPlayer.getOrDefault(playerUUID, new PlayerProgress()).trust;
+    }
+
     private String relationshipName(int trust) {
         if (trust >= 80) return "Crew";
         if (trust >= 55) return "Friend";

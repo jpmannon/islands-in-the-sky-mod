@@ -27,7 +27,6 @@ public class MortimerDialogueScreen extends Screen {
 
     private final MortimerDialoguePayload payload;
     private final List<OptionRegion> options = new ArrayList<>();
-    private int crewLogPage = 0;
     private int panelX;
     private int panelY;
     private int panelW;
@@ -88,9 +87,9 @@ public class MortimerDialogueScreen extends Screen {
 
         if (isCrewLog()) {
             options.add(new OptionRegion(panelX + 14, buttonY, buttonW, buttonH, "Crew", "log_crew"));
-            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY, buttonW, buttonH, "Relationships", "log_relationships"));
-            options.add(new OptionRegion(panelX + 14, buttonY + 27, buttonW, buttonH, "Clues", "log_clues"));
-            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY + 27, buttonW, buttonH, "Systems", "log_systems"));
+            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY, buttonW, buttonH, "Clues", "log_clues"));
+            options.add(new OptionRegion(panelX + 14, buttonY + 27, buttonW, buttonH, "Systems", "log_systems"));
+            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY + 27, buttonW, buttonH, "Notes", "log_notes"));
             options.add(new OptionRegion(panelX + 14, buttonY + 54, panelW - 28, buttonH, "Close logbook", "close"));
         } else if (isGeeraShop()) {
             options.add(new OptionRegion(panelX + 14, buttonY, buttonW, buttonH, payload.optionOne(), "geera_buy_bait"));
@@ -192,10 +191,8 @@ public class MortimerDialogueScreen extends Screen {
             for (OptionRegion option : options) {
                 if (option.contains(mouseX, mouseY - yOffset)) {
                     if (isCrewLog() && option.action.startsWith("log_")) {
-                        if ("log_crew".equals(option.action)) crewLogPage = 0;
-                        if ("log_relationships".equals(option.action)) crewLogPage = 1;
-                        if ("log_clues".equals(option.action)) crewLogPage = 2;
-                        if ("log_systems".equals(option.action)) crewLogPage = 3;
+                        PacketDistributor.sendToServer(new MortimerActionPayload(-1, option.action));
+                        this.onClose();
                         return true;
                     }
                     if (!"close".equals(option.action)) {
@@ -210,23 +207,11 @@ public class MortimerDialogueScreen extends Screen {
     }
 
     private String getDisplayBody() {
-        if (!isCrewLog()) return payload.body();
-        return switch (crewLogPage) {
-            case 1 -> "RELATIONSHIPS\n\nMortimer: protective, restless, and slowly learning to trust the player as crew. Trust grows through travel, repairs, and guild work.\n\nGeera: amused, practical, and warmer than she lets on. Trust grows through fishing work, shop visits, and dockside help.\n\nScoria: nervous, proud, and hiding the truth of his apprenticeship. Trust grows through engineering lessons and project stages.\n\nAzerion: loyal, formal, and difficult to read. Trust grows through artillery drills and safe cannon handling.";
-            case 2 -> "CLUES\n\nScoria's so-called banker clothes are actually interview clothes. Geera knows the truth and has been enjoying the misunderstanding.\n\nThe clues point toward Aero Guild apprenticeship, advanced propulsion, levitite stabilizers, and thruster work.\n\nMortimer is afraid his son chose safety over skyfaring, but the real reveal should make him proud.";
-            case 3 -> "SYSTEMS\n\nGeera's shop opens every 3rd Minecraft day. Her summon location acts as her dock/shop anchor.\n\nNPC moods and relationship notes live here instead of cluttering dialogue panels.\n\nThe Guilded Compass and Crew Logbook live in the Islands in the Sky creative tab.\n\nAzerion's questline introduces Create Big Cannons through drills, safety checks, and artillery discipline.";
-            default -> "CREW\n\nMortimer: veteran aeromancer, mentor, former skyfarer of the Abalone. Mood: watchful, sentimental, restless.\n\nGeera: fisherwoman and bait seller. Mood: amused, grounded, observant.\n\nScoria: half human, half goblin apprentice engineer. Mood: nervous, hopeful, secretive.\n\nAzerion Rook: AZ Mk 9 autonomous warframe and former crew member. Mood: operational, loyal, emotionally encrypted.";
-        };
+        return payload.body();
     }
 
     private String getDisplayFooter() {
-        if (!isCrewLog()) return payload.footer();
-        return switch (crewLogPage) {
-            case 1 -> "Relationship details are tracked here instead of NPC menus.";
-            case 2 -> "Clues collect here as the Scoria reveal progresses.";
-            case 3 -> "Guidebook systems page for lightweight RPG mechanics.";
-            default -> "Crew status, moods, and role summaries.";
-        };
+        return payload.footer();
     }
 
     private void drawPanel(GuiGraphics g, int x, int y, int w, int h) {

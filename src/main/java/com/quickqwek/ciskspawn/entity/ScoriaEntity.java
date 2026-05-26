@@ -428,6 +428,10 @@ public class ScoriaEntity extends PathfinderMob implements GeoEntity {
         return progressByPlayer.computeIfAbsent(player.getUUID(), uuid -> new PlayerProgress());
     }
 
+    public int getTrustForPlayer(UUID playerUUID) {
+        return progressByPlayer.getOrDefault(playerUUID, new PlayerProgress()).trust;
+    }
+
     private void addTrust(PlayerProgress progress, int amount) {
         progress.trust = Math.min(100, progress.trust + amount);
     }
