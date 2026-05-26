@@ -15,7 +15,7 @@ public class ScoriaRenderer extends GeoEntityRenderer<ScoriaEntity> {
     @Override
     public void render(ScoriaEntity entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
         poseStack.pushPose();
-        poseStack.translate(0.0D, 1.0D, 0.0D);
+        poseStack.translate(0.0D, 0.75D, 0.0D);
         poseStack.scale(0.72F, 0.72F, 0.72F);
         super.render(entity, entityYaw, partialTick, poseStack, bufferSource, packedLight);
         poseStack.popPose();

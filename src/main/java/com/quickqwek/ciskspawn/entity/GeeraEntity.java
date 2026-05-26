@@ -756,7 +756,7 @@ public class GeeraEntity extends PathfinderMob implements GeoEntity {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "controller", 0, this::predicate));
+        controllers.add(new AnimationController<>(this, "controller", 5, this::predicate));
     }
 
     private PlayState predicate(AnimationState<GeeraEntity> state) {
