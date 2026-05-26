@@ -54,7 +54,7 @@ public class GeeraEntity extends PathfinderMob implements GeoEntity {
     private static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("animation");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
-    private final Map<UUID, Integer> questStageByPlayer = new HashMap<>();
+    private final Map<UUID, PlayerProgress> progressByPlayer = new HashMap<>();
     private int ambientCooldown = 20 * 154;
     private int coupleCooldown = 20 * 25;
     private int routineCooldown = 20 * 60;
@@ -122,9 +122,30 @@ public class GeeraEntity extends PathfinderMob implements GeoEntity {
     }
 
     public void openDialogue(Player player) {
-        int stage = questStageByPlayer.getOrDefault(player.getUUID(), 0);
+        PlayerProgress progress = getProgress(player);
+        if (!progress.hasMet) {
+            progress.hasMet = true;
+            addTrust(progress, 1);
+            String firstMeet = pickFirstMeeting(player);
+            say(player, firstMeet);
+            if (player instanceof ServerPlayer serverPlayer) {
+                PacketDistributor.sendToPlayer(serverPlayer, new MortimerDialoguePayload(
+                        this.getId(),
+                        "Geera - Fisherwoman",
+                        firstMeet,
+                        "Fishing work",
+                        "Fishing tips",
+                        "First time meeting Geera."
+                ));
+            }
+            return;
+        }
+
+        int stage = progress.fishingStage;
         FishQuest quest = QUESTS[Math.min(stage, QUESTS.length - 1)];
-        String body = buildDialogueBody(player, quest, stage);
+        String greeting = pickGeeraGreeting(progress, player.getName().getString());
+        String body = greeting + "\n\n" + buildDialogueBody(player, quest, stage);
+        say(player, greeting);
         if (player instanceof ServerPlayer serverPlayer) {
             PacketDistributor.sendToPlayer(serverPlayer, new MortimerDialoguePayload(
                     this.getId(),
@@ -229,12 +250,60 @@ public class GeeraEntity extends PathfinderMob implements GeoEntity {
                 + " Fishing progress: " + (stage + 1) + "/" + QUESTS.length + ".";
     }
 
+    private String pickFirstMeeting(Player player) {
+        if (this.level().isRaining()) {
+            return "Come in, come in. Rain up here is more personal than ground rain. Geera.";
+        }
+        return "Hello. You've got that look — you haven't eaten since you got here, have you? Don't answer that. Just sit.";
+    }
+
+    private String pickGeeraGreeting(PlayerProgress progress, String playerName) {
+        if (progress.trust >= 80) {
+            return randomOf(
+                    "Oh, it's you. Good. Come in.",
+                    "You look terrible. What happened? Sit down.",
+                    "This is your home too now. You know that, right?"
+            );
+        }
+
+        if (progress.trust >= 55) {
+            return randomOf(
+                    "I'm going to tell you something about Mortimer. You're going to have to act surprised when it comes up.",
+                    "You know — I came from somewhere before this. I don't talk about it much. But you're the kind of person I'd tell.",
+                    "You've been good for us. I hope you know that."
+            );
+        }
+
+        if (progress.trust >= 35) {
+            return randomOf(
+                    "There you are. Mortimer was asking about you. I wasn't, obviously.",
+                    "Something happened. I can see it. Do you want to talk about it or just fish for a while?",
+                    "You know you can just say if something's wrong? I won't fix it. But I'll listen."
+            );
+        }
+
+        if (progress.trust >= 15) {
+            return randomOf(
+                    "Back again. Good. You've got the look of someone learning to like it up here.",
+                    "How are you finding the eastern islands? I've got opinions if you want them.",
+                    "You're doing alright, " + playerName + ". Better than most newcomers."
+            );
+        }
+
+        return randomOf(
+                "Hello there. New to the sky, or just new to this island?",
+                "Geera. I sell bait, mostly. I also know things. The bait is cheaper.",
+                "Take your time. The sky doesn't rush anyone who knows how to read it."
+        );
+    }
+
     private boolean isShopDay() {
         long day = this.level().getDayTime() / 24000L;
         return day % SHOP_DAY_INTERVAL == 0;
     }
 
     private void openShopGui(Player player) {
+        addTrust(player, 1);
         long day = this.level().getDayTime() / 24000L;
         long next = SHOP_DAY_INTERVAL - (day % SHOP_DAY_INTERVAL);
         boolean open = isShopDay();
@@ -258,6 +327,7 @@ public class GeeraEntity extends PathfinderMob implements GeoEntity {
     }
 
     private void buyBait(Player player) {
+        addTrust(player, 1);
         if (isShopDay()) {
             if (!hasPayment(player, "minecraft:copper_ingot", 1) && !hasPayment(player, "minecraft:emerald", 1)) {
                 say(player, "Bait costs one copper ingot. Or an emerald if you're feeling theatrical.");
@@ -281,6 +351,7 @@ public class GeeraEntity extends PathfinderMob implements GeoEntity {
     }
 
     private void buyRumor(Player player) {
+        addTrust(player, 1);
         rumorsSold++;
         String[] rumors = new String[] {
                 "Stormglass fish have been circling under broken islands. That usually means strange currents.",
@@ -295,6 +366,7 @@ public class GeeraEntity extends PathfinderMob implements GeoEntity {
     }
 
     private void sellCatch(Player player) {
+        addTrust(player, 1);
         int sold = 0;
         for (FishQuest quest : QUESTS) {
             int count = Math.min(4, countItem(player, quest.itemId));
@@ -325,11 +397,12 @@ public class GeeraEntity extends PathfinderMob implements GeoEntity {
     }
 
     private void crewLog(Player player) {
-        int stage = questStageByPlayer.getOrDefault(player.getUUID(), 0);
+        PlayerProgress progress = getProgress(player);
+        int stage = progress.fishingStage;
         logbookOpens++;
         String body = "Crew Log - Dockside Notes\n\n"
                 + "Geera: fisherwoman, bait-and-tackle operator, dock rumor collector, and the person most likely to make Mortimer admit he needs lunch.\n\n"
-                + "Fishing Progress: " + Math.min(stage + 1, QUESTS.length) + "/" + QUESTS.length + ".\n\n"
+                + "Trust: " + progress.trust + "/100. Fishing Progress: " + Math.min(stage + 1, QUESTS.length) + "/" + QUESTS.length + ".\n\n"
                 + "Mood: " + currentMood() + ".\n"
                 + "World counters: couple lines " + coupleLinesSpoken + ", emotes " + emotesShown + ", work sessions " + workSessionsCompleted + ", logbook opens " + logbookOpens + ".\n\n"
                 + "Shop Ledger: bait bundles sold " + baitBundlesSold + ", rumors traded " + rumorsSold + ", fish bought " + fishBought + ". Shop days happen every third Minecraft day.\n\n"
@@ -352,14 +425,16 @@ public class GeeraEntity extends PathfinderMob implements GeoEntity {
     }
 
     private void handleQuest(Player player) {
-        int stage = questStageByPlayer.getOrDefault(player.getUUID(), 0);
+        PlayerProgress progress = getProgress(player);
+        int stage = progress.fishingStage;
         FishQuest quest = QUESTS[Math.min(stage, QUESTS.length - 1)];
         int count = countItem(player, quest.itemId);
         if (count >= quest.amount) {
             removeItems(player, quest.itemId, quest.amount);
+            addTrust(progress, 5);
             say(player, "Good catch. " + quest.completionLine);
             if (stage < QUESTS.length - 1) {
-                questStageByPlayer.put(player.getUUID(), stage + 1);
+                progress.fishingStage = stage + 1;
                 FishQuest next = QUESTS[stage + 1];
                 say(player, "Next, bring me " + next.amount + "x " + next.displayName + ". Waters don't work themselves.");
             } else {
@@ -573,6 +648,18 @@ public class GeeraEntity extends PathfinderMob implements GeoEntity {
         return lines[this.random.nextInt(lines.length)];
     }
 
+    private PlayerProgress getProgress(Player player) {
+        return progressByPlayer.computeIfAbsent(player.getUUID(), uuid -> new PlayerProgress());
+    }
+
+    private void addTrust(Player player, int amount) {
+        addTrust(getProgress(player), amount);
+    }
+
+    private void addTrust(PlayerProgress progress, int amount) {
+        progress.trust = Math.min(100, progress.trust + amount);
+    }
+
     private void showEmote(String icon) {
         emotesShown++;
         this.setCustomName(Component.literal("§2Geera §f" + icon));
@@ -584,13 +671,15 @@ public class GeeraEntity extends PathfinderMob implements GeoEntity {
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         ListTag list = new ListTag();
-        for (Map.Entry<UUID, Integer> entry : questStageByPlayer.entrySet()) {
+        for (Map.Entry<UUID, PlayerProgress> entry : progressByPlayer.entrySet()) {
             CompoundTag playerTag = new CompoundTag();
             playerTag.putUUID("Player", entry.getKey());
-            playerTag.putInt("QuestStage", entry.getValue());
+            playerTag.putInt("Trust", entry.getValue().trust);
+            playerTag.putBoolean("HasMet", entry.getValue().hasMet);
+            playerTag.putInt("FishingStage", entry.getValue().fishingStage);
             list.add(playerTag);
         }
-        tag.put("GeeraFishingProgress", list);
+        tag.put("GeeraProgress", list);
         tag.putInt("AmbientCooldown", ambientCooldown);
         tag.putInt("CoupleCooldown", coupleCooldown);
         tag.putInt("EmoteCooldown", emoteCooldown);
@@ -607,7 +696,7 @@ public class GeeraEntity extends PathfinderMob implements GeoEntity {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        questStageByPlayer.clear();
+        progressByPlayer.clear();
         if (tag.contains("AmbientCooldown")) ambientCooldown = tag.getInt("AmbientCooldown");
         if (tag.contains("CoupleCooldown")) coupleCooldown = tag.getInt("CoupleCooldown");
         if (tag.contains("EmoteCooldown")) emoteCooldown = tag.getInt("EmoteCooldown");
@@ -619,11 +708,23 @@ public class GeeraEntity extends PathfinderMob implements GeoEntity {
         if (tag.contains("WorkSessionsCompleted")) workSessionsCompleted = tag.getInt("WorkSessionsCompleted");
         if (tag.contains("LogbookOpens")) logbookOpens = tag.getInt("LogbookOpens");
         if (tag.contains("ManualShopX")) manualShopAnchor = new BlockPos(tag.getInt("ManualShopX"), tag.getInt("ManualShopY"), tag.getInt("ManualShopZ"));
-        if (tag.contains("GeeraFishingProgress", Tag.TAG_LIST)) {
+        if (tag.contains("GeeraProgress", Tag.TAG_LIST)) {
+            ListTag list = tag.getList("GeeraProgress", Tag.TAG_COMPOUND);
+            for (int i = 0; i < list.size(); i++) {
+                CompoundTag playerTag = list.getCompound(i);
+                PlayerProgress progress = new PlayerProgress();
+                progress.trust = playerTag.getInt("Trust");
+                if (playerTag.contains("HasMet")) progress.hasMet = playerTag.getBoolean("HasMet");
+                progress.fishingStage = playerTag.getInt("FishingStage");
+                progressByPlayer.put(playerTag.getUUID("Player"), progress);
+            }
+        } else if (tag.contains("GeeraFishingProgress", Tag.TAG_LIST)) {
             ListTag list = tag.getList("GeeraFishingProgress", Tag.TAG_COMPOUND);
             for (int i = 0; i < list.size(); i++) {
                 CompoundTag playerTag = list.getCompound(i);
-                questStageByPlayer.put(playerTag.getUUID("Player"), playerTag.getInt("QuestStage"));
+                PlayerProgress progress = new PlayerProgress();
+                progress.fishingStage = playerTag.getInt("QuestStage");
+                progressByPlayer.put(playerTag.getUUID("Player"), progress);
             }
         }
     }
@@ -645,4 +746,10 @@ public class GeeraEntity extends PathfinderMob implements GeoEntity {
     }
 
     private record FishQuest(String itemId, String displayName, int amount, String completionLine) {}
+
+    private static class PlayerProgress {
+        int trust = 0;
+        boolean hasMet = false;
+        int fishingStage = 0;
+    }
 }
