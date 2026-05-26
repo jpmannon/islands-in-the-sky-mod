@@ -139,10 +139,11 @@ public abstract class AbstractNpcDialogueScreen extends Screen {
         if (button == 0) {
             for (OptionRegion option : options) {
                 if (contains(option, mouseX, mouseY)) {
-                    if (!"close".equals(option.action())) {
+                    if ("close".equals(option.action())) {
+                        this.onClose();
+                    } else {
                         PacketDistributor.sendToServer(new MortimerActionPayload(payload.entityId(), option.action()));
                     }
-                    this.onClose();
                     return true;
                 }
             }
