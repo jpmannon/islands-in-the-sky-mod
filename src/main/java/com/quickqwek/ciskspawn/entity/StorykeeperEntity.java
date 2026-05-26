@@ -161,6 +161,26 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
 
     public void openDialogue(Player player) {
         PlayerProgress progress = getProgress(player);
+
+        if (!progress.hasMet) {
+            progress.hasMet = true;
+            progress.trust = Math.min(100, progress.trust + 1);
+            String firstMeet = pickFirstMeeting(player);
+            say("Mortimer - Aeromancer", firstMeet, player);
+
+            if (player instanceof ServerPlayer serverPlayer) {
+                PacketDistributor.sendToPlayer(serverPlayer, new MortimerDialoguePayload(
+                        this.getId(),
+                        "Mortimer - Aeromancer",
+                        firstMeet,
+                        "Tell me about this place",
+                        "What do you do here?",
+                        "First time meeting Mortimer."
+                ));
+            }
+            return;
+        }
+
         progress.trust = Math.min(100, progress.trust + 1);
 
         String playerName = player.getName().getString();
@@ -194,6 +214,13 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
             case "emote" -> showEmote(randomOf("🔧", "☕", "⚙", "💭", "🧭"));
             default -> openDialogue(player);
         }
+    }
+
+    private String pickFirstMeeting(Player player) {
+        if (this.level().isRaining()) {
+            return "You came in during this? Either you're brave or you didn't check the sky before you left. Mortimer.";
+        }
+        return "Haven't seen you before. That means you just arrived or you've been avoiding the guild. Either way — you're here now. Name's Mortimer.";
     }
 
     private String buildDialogueBody(String playerName, PlayerProgress progress) {
@@ -1354,6 +1381,7 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
             playerTag.putUUID("Player", entry.getKey());
             playerTag.putInt("Trust", entry.getValue().trust);
             playerTag.putInt("QuestStage", entry.getValue().questStage);
+            playerTag.putBoolean("HasMet", entry.getValue().hasMet);
             list.add(playerTag);
         }
         tag.put("MortimerProgress", list);
@@ -1398,6 +1426,7 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
                 PlayerProgress progress = new PlayerProgress();
                 progress.trust = playerTag.getInt("Trust");
                 progress.questStage = playerTag.getInt("QuestStage");
+                if (playerTag.contains("HasMet")) progress.hasMet = playerTag.getBoolean("HasMet");
                 progressByPlayer.put(playerTag.getUUID("Player"), progress);
             }
         }
@@ -1436,5 +1465,6 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
     private static class PlayerProgress {
         int trust = 0;
         int questStage = 0;
+        boolean hasMet = false;
     }
 }
