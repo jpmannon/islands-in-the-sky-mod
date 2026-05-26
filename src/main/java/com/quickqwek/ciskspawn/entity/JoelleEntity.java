@@ -122,11 +122,31 @@ public class JoelleEntity extends PathfinderMob implements GeoEntity {
     }
 
     private String pickJoelleGreeting(PlayerProgress progress) {
-        if (progress.trust >= 80) return "Oh good, it's you. I made too much of everything. Sit.";
-        if (progress.trust >= 55) return "I've been saving something for you. Come in.";
-        if (progress.trust >= 35) return "There you are. I was wondering if you'd come back at the right time.";
-        if (progress.trust >= 15) return "Back again. The soup is better today than yesterday. I planned it that way.";
-        return "Take your time. Everyone gets a moment to breathe here.";
+        if (progress.trust >= 80) return randomOf(
+                "Oh good, it's you. I made too much of everything. Sit.",
+                "Come in, come in. I've been waiting for someone with taste to try this.",
+                "You. Good. I need a second opinion and you are the only one I trust to give an honest one."
+        );
+        if (progress.trust >= 55) return randomOf(
+                "I've been saving something for you. Come in.",
+                "Sit down. I have been thinking about the next dish and I want to talk it through.",
+                "There you are. I set aside a portion. I was not going to, and then I did."
+        );
+        if (progress.trust >= 35) return randomOf(
+                "There you are. I was wondering if you'd come back at the right time.",
+                "The timing is right today. That matters more than people admit.",
+                "Good. I need someone around who doesn't treat the kitchen like a hallway."
+        );
+        if (progress.trust >= 15) return randomOf(
+                "Back again. The soup is better today than yesterday. I planned it that way.",
+                "Come in. I was just starting something — you can watch if you are quiet about it.",
+                "Oh. You're back. Good. The last batch needed a witness and you missed it."
+        );
+        return randomOf(
+                "Take your time. Everyone gets a moment to breathe here.",
+                "Sit wherever. I'll come to you when I have a second.",
+                "Don't apologize for looking lost — everyone does the first time."
+        );
     }
 
     private String buildDialogueBody(PlayerProgress progress) {

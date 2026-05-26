@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -13,255 +14,307 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MortimerDialogueScreen extends Screen {
-    private static final int FRAME = 0xEE2B1B14;
-    private static final int INNER = 0xEE16343A;
-    private static final int INNER_DARK = 0xEE0D2026;
-    private static final int BRASS = 0xFFD7A84A;
-    private static final int BRASS_DARK = 0xFF7B5425;
-    private static final int BRASS_FAINT = 0xAA7B5425;
-    private static final int TEAL = 0xFF46C7C7;
-    private static final int TEAL_DARK = 0xDD0D4E58;
-    private static final int TEAL_HOVER = 0xEE146B78;
-    private static final int TEXT = 0xFFEFE2C2;
-    private static final int MUTED = 0xFFB8AA86;
 
+    // ── Colours ───────────────────────────────────────────────────────────────
+    private static final int FRAME        = 0xEE2B1B14;
+    private static final int INNER        = 0xEE16343A;
+    private static final int INNER_DARK   = 0xEE0D2026;
+    private static final int PARCHMENT    = 0xEED4B483;   // dialogue text background
+    private static final int PARCH_TEXT   = 0xFF2B1A08;   // dark ink on parchment
+    private static final int BRASS        = 0xFFD7A84A;
+    private static final int BRASS_DARK   = 0xFF7B5425;
+    private static final int BRASS_FAINT  = 0xAA7B5425;
+    private static final int TEAL         = 0xFF46C7C7;
+    private static final int TEAL_DARK    = 0xDD0D4E58;
+    private static final int TEAL_HOVER   = 0xEE146B78;
+    private static final int MUTED        = 0xFFB8AA86;
+
+    // ── Layout constants ──────────────────────────────────────────────────────
+    private static final int PORTRAIT_SIZE  = 120;   // portrait texture must be 120×120 px
+    private static final int TITLE_H        = 38;    // height of title + subtitle strip
+    private static final int TOP_H          = PORTRAIT_SIZE + 8;
+    private static final int BUTTON_H       = 22;
+    private static final int BUTTON_GAP     = 5;
+    private static final int BUTTON_ROWS    = 3;
+    private static final int BUTTONS_H      = BUTTON_ROWS * (BUTTON_H + BUTTON_GAP) + 8;
+
+    // ── State ─────────────────────────────────────────────────────────────────
     private final MortimerDialoguePayload payload;
     private final List<OptionRegion> options = new ArrayList<>();
-    private int panelX;
-    private int panelY;
-    private int panelW;
-    private int panelH;
+    private int panelX, panelY, panelW, panelH;
 
-    private boolean isGeera() {
-        return payload.title().toLowerCase().contains("geera");
+    // ── NPC detection ─────────────────────────────────────────────────────────
+    private boolean isGeera()      { String t = lo(); return t.contains("geera") && !isGeeraShop() && !isGeeraWorkstation(); }
+    private boolean isScoria()     { return lo().contains("scoria"); }
+    private boolean isAzerion()    { String t = lo(); return t.contains("azerion") || t.contains("az mk"); }
+    private boolean isJoelle()     { return lo().contains("joelle"); }
+    private boolean isRamone()     { return lo().contains("ramone"); }
+    private boolean isVelho()      { return lo().contains("velho"); }
+    private boolean isGeeraShop()  { return lo().contains("bait & tackle"); }
+    private boolean isGeeraWorkstation()    { return lo().contains("geera workstation"); }
+    private boolean isMortimerGuildStatus() { return lo().contains("mortimer guild status"); }
+    private boolean isCrewLog()    { return lo().contains("crew logbook"); }
+    private String lo()            { return payload.title().toLowerCase(); }
+
+    // ── Portrait textures ─────────────────────────────────────────────────────
+    // Drop a 120×120 PNG into:
+    //   src/main/resources/assets/ciskspawn/textures/gui/portrait/<name>.png
+    // The dark placeholder frame shows automatically when a file is missing.
+    private ResourceLocation getPortraitTexture() {
+        if (isAzerion())                      return portrait("azerion");
+        if (isScoria())                       return portrait("scoria");
+        if (isGeeraShop() || isGeera())       return portrait("geera");
+        if (isJoelle())                       return portrait("joelle");
+        if (isRamone())                       return portrait("ramone");
+        if (isVelho())                        return portrait("velho");
+        return portrait("mortimer"); // default / crew log
     }
 
-    private boolean isScoria() {
-        return payload.title().toLowerCase().contains("scoria");
+    private static ResourceLocation portrait(String name) {
+        return ResourceLocation.fromNamespaceAndPath("ciskspawn", "textures/gui/portrait/" + name + ".png");
     }
 
-    private boolean isAzerion() {
-        String title = payload.title().toLowerCase();
-        return title.contains("azerion") || title.contains("az mk");
-    }
-
-    private boolean isJoelle() {
-        return payload.title().toLowerCase().contains("joelle");
-    }
-
-    private boolean isRamone() {
-        return payload.title().toLowerCase().contains("ramone");
-    }
-
-    private boolean isVelho() {
-        return payload.title().toLowerCase().contains("velho");
-    }
-
-    private boolean isGeeraShop() {
-        return payload.title().toLowerCase().contains("bait & tackle");
-    }
-
-    private boolean isGeeraWorkstation() { return payload.title().toLowerCase().contains("geera workstation"); }
-    private boolean isMortimerGuildStatus() { return payload.title().toLowerCase().contains("mortimer guild status"); }
-
-    private boolean isCrewLog() {
-        return payload.title().toLowerCase().contains("crew logbook");
-    }
-
+    // ── Constructor ───────────────────────────────────────────────────────────
     public MortimerDialogueScreen(MortimerDialoguePayload payload) {
         super(Component.literal(payload.title()));
         this.payload = payload;
     }
 
+    // ── Init ──────────────────────────────────────────────────────────────────
     @Override
     protected void init() {
-        this.panelW = Math.min(430, this.width - 32);
-        this.panelH = 288;
-        this.panelX = this.width - this.panelW - 24;
-        this.panelY = Math.max(14, this.height / 2 - 138);
+        panelW = Math.min(480, this.width - 32);
+        panelH = TITLE_H + TOP_H + 10 + BUTTONS_H + 12;
+        panelX = (this.width - panelW) / 2;            // centred
+        panelY = Math.max(14, this.height / 2 - panelH / 2);
 
         options.clear();
-        int buttonW = (panelW - 42) / 2;
-        int buttonH = 22;
-        int buttonY = panelY + panelH - 108;
+        int pad   = 14;
+        int bw    = (panelW - pad * 2 - 8) / 2;       // button width (2-column)
+        int bax   = panelX + pad;                      // button area left
+        int bay   = panelY + TITLE_H + TOP_H + 14;    // button area top
 
         if (isCrewLog()) {
-            options.add(new OptionRegion(panelX + 14, buttonY, buttonW, buttonH, "Crew", "log_crew"));
-            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY, buttonW, buttonH, "Clues", "log_clues"));
-            options.add(new OptionRegion(panelX + 14, buttonY + 27, buttonW, buttonH, "Systems", "log_systems"));
-            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY + 27, buttonW, buttonH, "Notes", "log_notes"));
-            options.add(new OptionRegion(panelX + 14, buttonY + 54, panelW - 28, buttonH, "Close logbook", "close"));
+            addBtn(bax,         bay,              bw,           "Crew",          "log_crew");
+            addBtn(bax + bw+8,  bay,              bw,           "Clues",         "log_clues");
+            addBtn(bax,         bay+row(1),       bw,           "Systems",       "log_systems");
+            addBtn(bax + bw+8,  bay+row(1),       bw,           "Notes",         "log_notes");
+            addBtn(bax,         bay+row(2),       panelW-pad*2, "Close logbook", "close");
+
         } else if (isGeeraShop()) {
-            options.add(new OptionRegion(panelX + 14, buttonY, buttonW, buttonH, payload.optionOne(), "geera_buy_bait"));
-            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY, buttonW, buttonH, payload.optionTwo(), "geera_buy_rumor"));
-            options.add(new OptionRegion(panelX + 14, buttonY + 27, buttonW, buttonH, "Fishing work", "geera_quest"));
-            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY + 27, buttonW, buttonH, "Sell catch", "geera_sell_catch"));
-            options.add(new OptionRegion(panelX + 14, buttonY + 54, panelW - 28, buttonH, "Goodbye", "close"));
+            addBtn(bax,         bay,              bw,           payload.optionOne(),  "geera_buy_bait");
+            addBtn(bax + bw+8,  bay,              bw,           payload.optionTwo(),  "geera_buy_rumor");
+            addBtn(bax,         bay+row(1),       bw,           "Fishing work",       "geera_quest");
+            addBtn(bax + bw+8,  bay+row(1),       bw,           "Sell catch",         "geera_sell_catch");
+            addBtn(bax,         bay+row(2),       panelW-pad*2, "Goodbye",            "close");
+
         } else if (isGeera()) {
-            options.add(new OptionRegion(panelX + 14, buttonY, buttonW, buttonH, payload.optionOne(), "geera_quest"));
-            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY, buttonW, buttonH, "Open shop", "geera_shop"));
-            options.add(new OptionRegion(panelX + 14, buttonY + 27, buttonW, buttonH, "Fishing tips", "geera_tips"));
-            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY + 27, buttonW, buttonH, "Goodbye", "close"));
+            addBtn(bax,         bay,              bw,           payload.optionOne(),  "geera_quest");
+            addBtn(bax + bw+8,  bay,              bw,           "Open shop",          "geera_shop");
+            addBtn(bax,         bay+row(1),       bw,           "Fishing tips",       "geera_tips");
+            addBtn(bax + bw+8,  bay+row(1),       bw,           "Goodbye",            "close");
+
         } else if (isAzerion()) {
-            options.add(new OptionRegion(panelX + 14, buttonY, buttonW, buttonH, "Begin cannon drill", "azerion_drill"));
-            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY, buttonW, buttonH, "Operational query", "azerion_query"));
-            options.add(new OptionRegion(panelX + 14, buttonY + 27, buttonW, buttonH, "Relationship", "azerion_relationship"));
-            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY + 27, buttonW, buttonH, "Goodbye", "close"));
+            addBtn(bax,         bay,              bw,           "Begin cannon drill", "azerion_drill");
+            addBtn(bax + bw+8,  bay,              bw,           "Operational query",  "azerion_query");
+            addBtn(bax,         bay+row(1),       bw,           "Relationship",       "azerion_relationship");
+            addBtn(bax + bw+8,  bay+row(1),       bw,           "Goodbye",            "close");
+
         } else if (isJoelle()) {
-            options.add(new OptionRegion(panelX + 14, buttonY, buttonW, buttonH, "Cooking quest", "joelle_quest"));
-            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY, buttonW, buttonH, "Ask for a recipe tip", "joelle_recipe"));
-            options.add(new OptionRegion(panelX + 14, buttonY + 27, panelW - 28, buttonH, "Goodbye", "close"));
+            addBtn(bax,         bay,              bw,           "Cooking quest",      "joelle_quest");
+            addBtn(bax + bw+8,  bay,              bw,           "Ask for a recipe",   "joelle_recipe");
+            addBtn(bax,         bay+row(1),       panelW-pad*2, "Goodbye",            "close");
+
         } else if (isRamone()) {
-            options.add(new OptionRegion(panelX + 14, buttonY, buttonW, buttonH, "Garden work", "ramone_quest"));
-            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY, buttonW, buttonH, "Garden tip", "ramone_garden"));
-            options.add(new OptionRegion(panelX + 14, buttonY + 27, buttonW, buttonH, "About the sky", "ramone_sky"));
-            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY + 27, buttonW, buttonH, "Goodbye", "close"));
+            addBtn(bax,         bay,              bw,           "Garden work",        "ramone_quest");
+            addBtn(bax + bw+8,  bay,              bw,           "Garden tip",         "ramone_garden");
+            addBtn(bax,         bay+row(1),       bw,           "About the sky",      "ramone_sky");
+            addBtn(bax + bw+8,  bay+row(1),       bw,           "Goodbye",            "close");
+
         } else if (isVelho()) {
-            if ("Wait".equals(payload.optionOne()) || payload.footer().toLowerCase().contains("not looked up")) {
-                options.add(new OptionRegion(panelX + 14, buttonY, panelW - 28, buttonH, "Wait", "velho_wait"));
+            if ("Wait".equals(payload.optionOne()) || lo().contains("not looked up")) {
+                addBtn(bax, bay, panelW - pad * 2, "Wait", "velho_wait");
             } else {
-                options.add(new OptionRegion(panelX + 14, buttonY, buttonW, buttonH, "Enchanting work", "velho_quest"));
-                options.add(new OptionRegion(panelX + 28 + buttonW, buttonY, buttonW, buttonH, "Enchanting tip", "velho_enchanting"));
-                options.add(new OptionRegion(panelX + 14, buttonY + 27, buttonW, buttonH, "About Azerion", "velho_azerion"));
-                options.add(new OptionRegion(panelX + 28 + buttonW, buttonY + 27, buttonW, buttonH, "Goodbye", "close"));
+                addBtn(bax,         bay,          bw,           "Enchanting work",    "velho_quest");
+                addBtn(bax + bw+8,  bay,          bw,           "Enchanting tip",     "velho_enchanting");
+                addBtn(bax,         bay+row(1),   bw,           "About Azerion",      "velho_azerion");
+                addBtn(bax + bw+8,  bay+row(1),   bw,           "Goodbye",            "close");
             }
+
         } else if (isScoria()) {
-            options.add(new OptionRegion(panelX + 14, buttonY, buttonW, buttonH, "Engineering lesson", "scoria_lesson"));
-            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY, buttonW, buttonH, "About Mortimer", "scoria_mortimer"));
-            options.add(new OptionRegion(panelX + 14, buttonY + 27, buttonW, buttonH, "Advance project", "scoria_project"));
-            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY + 27, buttonW, buttonH, "Goodbye", "close"));
+            addBtn(bax,         bay,              bw,           "Engineering lesson", "scoria_lesson");
+            addBtn(bax + bw+8,  bay,              bw,           "About Mortimer",     "scoria_mortimer");
+            addBtn(bax,         bay+row(1),       bw,           "Advance project",    "scoria_project");
+            addBtn(bax + bw+8,  bay+row(1),       bw,           "Goodbye",            "close");
+
         } else {
-            options.add(new OptionRegion(panelX + 14, buttonY, buttonW, buttonH, payload.optionOne(), "talk"));
-            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY, buttonW, buttonH, payload.optionTwo(), "travel"));
-            options.add(new OptionRegion(panelX + 14, buttonY + 27, buttonW, buttonH, "Follow me", "follow"));
-            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY + 27, buttonW, buttonH, "Goodbye", "close"));
+            // Mortimer default
+            addBtn(bax,         bay,              bw,           payload.optionOne(),  "talk");
+            addBtn(bax + bw+8,  bay,              bw,           payload.optionTwo(),  "travel");
+            addBtn(bax,         bay+row(1),       bw,           "Follow me",          "follow");
+            addBtn(bax + bw+8,  bay+row(1),       bw,           "Goodbye",            "close");
         }
     }
 
+    /** Y offset for button row n (0-indexed). */
+    private int row(int n) { return n * (BUTTON_H + BUTTON_GAP); }
+
+    private void addBtn(int x, int y, int w, String label, String action) {
+        options.add(new OptionRegion(x, y, w, BUTTON_H, label, action));
+    }
+
+    // ── Screen overrides ──────────────────────────────────────────────────────
+    @Override public boolean isPauseScreen() { return false; }
+
     @Override
-    public boolean isPauseScreen() {
-        return false;
+    public void renderBackground(GuiGraphics g, int mx, int my, float pt) {
+        // World stays visible — diegetic floating panel
     }
 
     @Override
-    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        // Keep the world visible. Mortimer's dialogue is a diegetic floating Guild panel, not a pause screen.
-    }
+    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        long gt = Minecraft.getInstance().level == null ? 0 : Minecraft.getInstance().level.getGameTime();
+        int bob  = (int)(Math.sin(gt / 12.0) * 2.0);
+        int y    = panelY + bob;
+        int yOff = bob;
 
-    @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        int bob = (int)(Math.sin((Minecraft.getInstance().level == null ? 0 : Minecraft.getInstance().level.getGameTime()) / 12.0) * 2.0);
-        int y = panelY + bob;
-        int yOffset = y - panelY;
+        drawPanel(g, panelX, y, panelW, panelH);
 
-        drawPanel(graphics, panelX, y, panelW, panelH);
+        // ── Title (centred) ──────────────────────────────────────
+        String title  = payload.title();
+        int titleX = panelX + (panelW - this.font.width(title)) / 2;
+        g.drawString(this.font, title, titleX, y + 10, BRASS, false);
+        g.hLine(panelX + 14, panelX + panelW - 14, y + 26, BRASS_DARK);
+        String sub = getSubtitle();
+        int subX = panelX + (panelW - this.font.width(sub)) / 2;
+        g.drawString(this.font, sub, subX, y + TITLE_H - 8, MUTED, false);
 
-        graphics.drawString(this.font, payload.title(), panelX + 16, y + 12, BRASS, false);
-        graphics.hLine(panelX + 14, panelX + panelW - 14, y + 27, BRASS_DARK);
-        String subtitle = isCrewLog() ? "✦ Persistent crew notes" : (isGeeraShop() ? "✦ Dockside shop" : (isAzerion() ? "✦ CBC artillery training interface" : (isVelho() ? "✦ Workshop notes" : (isRamone() ? "✦ Garden ledger" : (isScoria() ? "✦ Apprentice engineering notes" : (isGeera() ? "✦ Dockside fishing ledger" : "✦ Aero Guild projection interface"))))));
-        graphics.drawString(this.font, subtitle, panelX + 16, y + 32, MUTED, false);
+        // ── Portrait ─────────────────────────────────────────────
+        int px = panelX + 14;
+        int py = y + TITLE_H + 4;
+        drawPortrait(g, px, py);
 
-        int textY = y + 50;
-        int maxTextY = y + panelH - 132;
-        List<FormattedCharSequence> bodyLines = this.font.split(Component.literal(getDisplayBody()), panelW - 32);
-        for (int i = 0; i < bodyLines.size(); i++) {
-            if (textY + 10 > maxTextY) {
-                graphics.drawString(this.font, "...", panelX + 16, textY, MUTED, false);
+        // ── Dialogue text (parchment) ─────────────────────────────
+        int tx  = px + PORTRAIT_SIZE + 12;
+        int tw  = panelW - (PORTRAIT_SIZE + 14 + 12 + 14);
+        int ty  = py;
+        int th  = PORTRAIT_SIZE;
+        g.fill(tx - 2, ty - 2, tx + tw + 2, ty + th + 2, BRASS_DARK); // thin brass border
+        g.fill(tx, ty, tx + tw, ty + th, PARCHMENT);
+
+        int textY   = ty + 5;
+        int maxTextY = ty + th - 8;
+        List<FormattedCharSequence> lines = this.font.split(Component.literal(getDisplayBody()), tw - 8);
+        for (FormattedCharSequence line : lines) {
+            if (textY + 9 > maxTextY) {
+                g.drawString(this.font, "...", tx + 4, textY, PARCH_TEXT, false);
                 break;
             }
-            graphics.drawString(this.font, bodyLines.get(i), panelX + 16, textY, TEXT, false);
+            g.drawString(this.font, line, tx + 4, textY, PARCH_TEXT, false);
             textY += 10;
         }
 
-        int footerY = y + panelH - 108;
+        // ── Footer / trust hint (slim strip above buttons) ────────
+        int footerY = y + TITLE_H + TOP_H + 4;
         List<FormattedCharSequence> footerLines = this.font.split(Component.literal(getDisplayFooter()), panelW - 32);
-        for (int i = 0; i < Math.min(2, footerLines.size()); i++) {
-            graphics.drawString(this.font, footerLines.get(i), panelX + 16, footerY + i * 10, TEAL, false);
+        for (int i = 0; i < Math.min(1, footerLines.size()); i++) {
+            g.drawString(this.font, footerLines.get(i), panelX + 16, footerY + i * 10, TEAL, false);
         }
 
-        for (OptionRegion option : options) {
-            drawOption(graphics, option, mouseX, mouseY, yOffset);
-        }
+        // ── Buttons ───────────────────────────────────────────────
+        for (OptionRegion opt : options) drawOption(g, opt, mouseX, mouseY, yOff);
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(double mx, double my, int button) {
         if (button == 0) {
-            int yOffset = (int)(Math.sin((Minecraft.getInstance().level == null ? 0 : Minecraft.getInstance().level.getGameTime()) / 12.0) * 2.0);
-            for (OptionRegion option : options) {
-                if (option.contains(mouseX, mouseY - yOffset)) {
-                    if (isCrewLog() && option.action.startsWith("log_")) {
-                        PacketDistributor.sendToServer(new MortimerActionPayload(-1, option.action));
+            long gt = Minecraft.getInstance().level == null ? 0 : Minecraft.getInstance().level.getGameTime();
+            int yOff = (int)(Math.sin(gt / 12.0) * 2.0);
+            for (OptionRegion opt : options) {
+                if (opt.contains(mx, my - yOff)) {
+                    if (isCrewLog() && opt.action.startsWith("log_")) {
+                        PacketDistributor.sendToServer(new MortimerActionPayload(-1, opt.action));
                         this.onClose();
                         return true;
                     }
-                    if (!"close".equals(option.action)) {
-                        PacketDistributor.sendToServer(new MortimerActionPayload(payload.entityId(), option.action));
-                    }
+                    if (!"close".equals(opt.action))
+                        PacketDistributor.sendToServer(new MortimerActionPayload(payload.entityId(), opt.action));
                     this.onClose();
                     return true;
                 }
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(mx, my, button);
     }
 
-    private String getDisplayBody() {
-        return payload.body();
+    // ── Drawing helpers ───────────────────────────────────────────────────────
+    private String getSubtitle() {
+        if (isCrewLog())    return "✦ Persistent crew notes";
+        if (isGeeraShop())  return "✦ Dockside shop";
+        if (isAzerion())    return "✦ CBC artillery training interface";
+        if (isVelho())      return "✦ Workshop notes";
+        if (isRamone())     return "✦ Garden ledger";
+        if (isScoria())     return "✦ Apprentice engineering notes";
+        if (isGeera())      return "✦ Dockside fishing ledger";
+        return "✦ Aero Guild projection interface";
     }
 
-    private String getDisplayFooter() {
-        return payload.footer();
+    private String getDisplayBody()   { return payload.body(); }
+    private String getDisplayFooter() { return payload.footer(); }
+
+    private void drawPortrait(GuiGraphics g, int x, int y) {
+        // Brass frame
+        g.fill(x - 3, y - 3, x + PORTRAIT_SIZE + 3, y + PORTRAIT_SIZE + 3, BRASS);
+        g.fill(x - 1, y - 1, x + PORTRAIT_SIZE + 1, y + PORTRAIT_SIZE + 1, BRASS_DARK);
+        // Dark background visible if texture is missing
+        g.fill(x, y, x + PORTRAIT_SIZE, y + PORTRAIT_SIZE, INNER_DARK);
+        // Portrait texture — place a 120×120 PNG at:
+        //   src/main/resources/assets/ciskspawn/textures/gui/portrait/<npc>.png
+        g.blit(getPortraitTexture(), x, y, 0, 0, PORTRAIT_SIZE, PORTRAIT_SIZE, PORTRAIT_SIZE, PORTRAIT_SIZE);
     }
 
     private void drawPanel(GuiGraphics g, int x, int y, int w, int h) {
         g.fill(x, y, x + w, y + h, FRAME);
         g.fill(x + 3, y + 3, x + w - 3, y + h - 3, BRASS_DARK);
         g.fill(x + 6, y + 6, x + w - 6, y + h - 6, INNER);
-        g.fill(x + 10, y + 40, x + w - 10, y + h - 86, INNER_DARK);
 
+        // Brass corner rivets
         int s = 5;
-        g.fill(x + 8, y + 8, x + 8 + s, y + 8 + s, BRASS);
-        g.fill(x + w - 13, y + 8, x + w - 8, y + 13, BRASS);
-        g.fill(x + 8, y + h - 13, x + 13, y + h - 8, BRASS);
-        g.fill(x + w - 13, y + h - 13, x + w - 8, y + h - 8, BRASS);
+        g.fill(x + 8,     y + 8,     x + 8 + s,     y + 8 + s,     BRASS);
+        g.fill(x + w - 13, y + 8,    x + w - 8,     y + 13,        BRASS);
+        g.fill(x + 8,     y + h - 13, x + 13,       y + h - 8,     BRASS);
+        g.fill(x + w - 13, y + h - 13, x + w - 8,  y + h - 8,     BRASS);
 
-        g.hLine(x + 16, x + w - 16, y + h - 114, TEAL);
-        g.hLine(x + 16, x + w - 16, y + h - 95, BRASS_FAINT);
+        // Divider above buttons
+        int divY = y + TITLE_H + TOP_H + 8;
+        g.hLine(x + 14, x + w - 14, divY,     TEAL);
+        g.hLine(x + 14, x + w - 14, divY + 2, BRASS_FAINT);
     }
 
-    private void drawOption(GuiGraphics g, OptionRegion option, int mouseX, int mouseY, int yOffset) {
-        int x = option.x;
-        int y = option.y + yOffset;
-        boolean hovered = option.contains(mouseX, mouseY - yOffset);
-        g.fill(x, y, x + option.w, y + option.h, BRASS_DARK);
-        g.fill(x + 2, y + 2, x + option.w - 2, y + option.h - 2, hovered ? TEAL_HOVER : TEAL_DARK);
-        g.hLine(x + 4, x + option.w - 4, y + 4, hovered ? TEAL : BRASS_FAINT);
-        String label = option.label;
-        int textColor = hovered ? 0xFFFFD56A : 0xFFE7C05A;
-        int textX = x + Math.max(8, (option.w - this.font.width(label)) / 2);
-        g.drawString(this.font, label, textX, y + 7, textColor, false);
+    private void drawOption(GuiGraphics g, OptionRegion opt, int mouseX, int mouseY, int yOff) {
+        int x = opt.x;
+        int y = opt.y + yOff;
+        boolean hov = opt.contains(mouseX, mouseY - yOff);
+        g.fill(x, y, x + opt.w, y + opt.h, BRASS_DARK);
+        g.fill(x + 2, y + 2, x + opt.w - 2, y + opt.h - 2, hov ? TEAL_HOVER : TEAL_DARK);
+        g.hLine(x + 4, x + opt.w - 4, y + 4, hov ? TEAL : BRASS_FAINT);
+        int tc  = hov ? 0xFFFFD56A : 0xFFE7C05A;
+        int tx  = x + Math.max(8, (opt.w - this.font.width(opt.label)) / 2);
+        g.drawString(this.font, opt.label, tx, y + 7, tc, false);
     }
 
+    // ── OptionRegion ─────────────────────────────────────────────────────────
     private static class OptionRegion {
-        final int x;
-        final int y;
-        final int w;
-        final int h;
-        final String label;
-        final String action;
+        final int x, y, w, h;
+        final String label, action;
 
         OptionRegion(int x, int y, int w, int h, String label, String action) {
-            this.x = x;
-            this.y = y;
-            this.w = w;
-            this.h = h;
-            this.label = label;
-            this.action = action;
+            this.x = x; this.y = y; this.w = w; this.h = h;
+            this.label = label; this.action = action;
         }
 
-        boolean contains(double mouseX, double mouseY) {
-            return mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h;
+        boolean contains(double mx, double my) {
+            return mx >= x && mx <= x + w && my >= y && my <= y + h;
         }
     }
 }

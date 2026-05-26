@@ -146,11 +146,31 @@ public class VelhoEntity extends PathfinderMob implements GeoEntity {
     }
 
     private String pickVelhoGreeting(PlayerProgress progress) {
-        if (progress.trust >= 80) return "Oh. You. Yes. I need eyes on something. Come look at this.";
-        if (progress.trust >= 55) return "Sit down. I need to tell you something about what I've been working on.";
-        if (progress.trust >= 35) return "Good. I was just thinking about something you should hear.";
-        if (progress.trust >= 15) return "Come in. Mind the left table — that's organized.";
-        return "You again. Good. I have a question for you, actually.";
+        if (progress.trust >= 80) return randomOf(
+                "Oh. You. Yes. I need eyes on something. Come look at this.",
+                "Good. I was going to come find you and decided against it. This is better.",
+                "You. Sit. I have something finished and I want to describe it to someone who will actually follow along."
+        );
+        if (progress.trust >= 55) return randomOf(
+                "Sit down. I need to tell you something about what I've been working on.",
+                "Come in. I've been wrong about something for three weeks and I've only just noticed.",
+                "Good timing. I need to say something out loud so I can hear whether it's right."
+        );
+        if (progress.trust >= 35) return randomOf(
+                "Good. I was just thinking about something you should hear.",
+                "You're here. That saves me the effort of finding you.",
+                "Come in. I have one question for you and I need a direct answer."
+        );
+        if (progress.trust >= 15) return randomOf(
+                "Come in. Mind the left table — that's organized.",
+                "You came back. People often don't. Sit down if you want.",
+                "The right table. You can touch anything on the right table."
+        );
+        return randomOf(
+                "You again. Good. I have a question for you, actually.",
+                "Don't move anything. What do you need.",
+                "I'm busy. So are you, probably. Say what you came to say."
+        );
     }
 
     private String buildDialogueBody(PlayerProgress progress) {

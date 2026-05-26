@@ -122,11 +122,31 @@ public class RamoneEntity extends PathfinderMob implements GeoEntity {
     }
 
     private String pickRamoneGreeting(PlayerProgress progress) {
-        if (progress.trust >= 80) return "You're here. Good. I've got something to show you.";
-        if (progress.trust >= 55) return "Good timing. I was going to find you, actually.";
-        if (progress.trust >= 35) return "Oh, you again. Come round the back — easier to talk out there.";
-        if (progress.trust >= 15) return "Back. The south beds are looking good today.";
-        return "Ramone. Garden's in back. Joelle's inside if you need food.";
+        if (progress.trust >= 80) return randomOf(
+                "You're here. Good. I've got something to show you.",
+                "Come round. I've been watching something in the east bed and I want a second pair of eyes.",
+                "I was just thinking about you. The garden has been doing something unusual."
+        );
+        if (progress.trust >= 55) return randomOf(
+                "Good timing. I was going to find you, actually.",
+                "Come in from the path. I've got a few minutes and something to say.",
+                "You're back. Good. There's something I've been saving for the right moment."
+        );
+        if (progress.trust >= 35) return randomOf(
+                "Oh, you again. Come round the back — easier to talk out there.",
+                "Good. I was getting tired of the plants being the only company.",
+                "Glad you came. There's a question I have been turning over."
+        );
+        if (progress.trust >= 15) return randomOf(
+                "Back. The south beds are looking good today.",
+                "You came back. The compost is working. Two good signs.",
+                "Morning. Or close enough. The east side's already busy."
+        );
+        return randomOf(
+                "Ramone. Garden's in back. Joelle's inside if you need food.",
+                "If you're here for the restaurant, Joelle's inside. If not, I'm out here.",
+                "Don't touch the south row. Everything else, ask first."
+        );
     }
 
     private String buildDialogueBody(PlayerProgress progress) {

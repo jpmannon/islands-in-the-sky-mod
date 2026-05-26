@@ -108,7 +108,7 @@ public class AzerionEntity extends PathfinderMob implements GeoEntity {
         }
 
         String greeting = pickAzerionGreeting(progress, player.getName().getString());
-        String body = "AZERION ROOK MODEL AZ MK 9\nHigh Caliber Munitions Autonomous Warframe Unit\n\n"
+        String body = "AZERION ROOK MODEL A-Z MK. 9\nHigh Caliber Munitions Autonomous Guardian Unit\n\n"
                 + greeting + "\n\n"
                 + "Former Abalone crew. Current status: retired, technically. Azerion disagrees with the definition.\n\n"
                 + "Training focus: Create Big Cannons basics, safe loading, recoil discipline, targeting, and shipboard artillery etiquette.\n\n"
