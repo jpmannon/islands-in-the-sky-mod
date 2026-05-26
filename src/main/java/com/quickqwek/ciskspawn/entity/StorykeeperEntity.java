@@ -240,16 +240,45 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
         if (progress.questStage >= 3) {
             return "Back already, " + playerName + "? Good. Old ships like attention. Old aeromancers too, though we complain louder.";
         }
-        if (progress.trust > 35) {
-            return "There you are, " + playerName + ". I was beginning to think a banker had got you.";
+
+        if (progress.trust >= 80) {
+            return randomOf(
+                    "There you are. Geera was starting to worry. I told her you were fine. I was also worrying.",
+                    "You know you don't have to knock. This is just what home is now.",
+                    "I'm not going to say it out loud, so just... you know. Alright?"
+            );
         }
-        String[] greetings = new String[] {
-                "Ah, " + playerName + ". Still in one piece. Better than most first flights.",
-                "You look exhausted, " + playerName + ". Eat something before you start arguing with machinery.",
-                "Sky's wide, " + playerName + ". Try not to fall off the useful bits.",
-                "Engines, islands, weather, politics. All dangerous. Only one makes decent tea."
-        };
-        return greetings[this.random.nextInt(greetings.length)];
+
+        if (progress.trust >= 55) {
+            return randomOf(
+                    "You remind me of someone I used to crew with. Stubborn in the same useful direction.",
+                    "I'm going to tell you something and I need you to not make it a thing. Alright?",
+                    "There's something about the western arches I've never told the full version of...",
+                    "There was a voyage. Years ago. The kind they still tell about in quiet corners of taverns."
+            );
+        }
+
+        if (progress.trust >= 35) {
+            return randomOf(
+                    playerName + ". Was wondering when you'd show up.",
+                    "Don't tell me. Let me guess. Something went sideways and you want to talk about it.",
+                    "You've been busy. I can tell. Sit down. What happened?"
+            );
+        }
+
+        if (progress.trust >= 15) {
+            return randomOf(
+                    "Back again. Good. The sky suits you, I think.",
+                    "You handling yourself out there? No shame in asking questions.",
+                    "You've got that look. Someone thinking about the next island before they've finished the last."
+            );
+        }
+
+        return randomOf(
+                "You're new. The sky bring you here or something else?",
+                "I'll give you the same advice I give everyone: don't fly blind and keep your rope dry.",
+                "Mortimer. Been here long enough that the question doesn't matter much."
+        );
     }
 
 
