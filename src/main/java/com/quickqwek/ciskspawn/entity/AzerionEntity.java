@@ -86,6 +86,7 @@ public class AzerionEntity extends PathfinderMob implements GeoEntity {
     }
 
     public void openDialogue(Player player) {
+        player.getPersistentData().putBoolean("ciskspawn_spoke_to_azerion", true);
         PlayerProgress progress = getProgress(player);
         addTrust(progress, 1);
 
@@ -290,6 +291,10 @@ public class AzerionEntity extends PathfinderMob implements GeoEntity {
 
     private void addTrust(PlayerProgress progress, int amount) {
         progress.trust = Math.min(100, progress.trust + amount);
+    }
+
+    public void addTrustFromVelho(Player player, int amount) {
+        addTrust(getProgress(player), amount);
     }
 
     private int trustTier(PlayerProgress progress) {

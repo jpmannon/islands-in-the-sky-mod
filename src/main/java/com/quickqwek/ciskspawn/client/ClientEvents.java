@@ -17,6 +17,7 @@ public final class ClientEvents {
         e.registerEntityRenderer(ModEntities.GEERA.get(), GeeraRenderer::new);
         e.registerEntityRenderer(ModEntities.JOELLE.get(), JoelleRenderer::new);
         e.registerEntityRenderer(ModEntities.RAMONE.get(), RamoneRenderer::new);
+        e.registerEntityRenderer(ModEntities.VELHO.get(), VelhoRenderer::new);
         e.registerEntityRenderer(ModEntities.SCORIA.get(), ScoriaRenderer::new);
         e.registerEntityRenderer(ModEntities.AZERION_ROOK.get(), AzerionRenderer::new);
         CiskSpawnMod.LOG.info("[CISK] Client renderers registered.");
