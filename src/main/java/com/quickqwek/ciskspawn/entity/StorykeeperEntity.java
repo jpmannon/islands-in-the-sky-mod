@@ -25,6 +25,7 @@ import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.Level;
 import net.minecraft.server.level.ServerLevel;
@@ -102,7 +103,13 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
     private String lastSeatFailure = "";
     private BlockPos guildWorkTarget = null;
     private BlockPos manualGuildAnchor = null;
+    private BlockPos morningAnchor = null;
+    private BlockPos afternoonAnchor = null;
+    private BlockPos eveningAnchor = null;
+    private BlockPos scheduledTarget = null;
     private int guildWorkTicks = 0;
+    private int scheduleCooldown = 20 * 20;
+    private int nextScheduleAnchorSlot = 0;
     private int guildMeetingsMentioned = 0;
     private int coupleLinesSpoken = 0;
     private int emotesShown = 0;
@@ -154,6 +161,11 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
         if (hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
 
         if (!this.level().isClientSide) {
+            ItemStack held = player.getItemInHand(hand);
+            if (player.isShiftKeyDown() && held.is(Items.STICK)) {
+                setNextScheduleAnchor(player);
+                return InteractionResult.SUCCESS;
+            }
             openDialogue(player);
         }
 
@@ -234,6 +246,38 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
             case "CLEAR" -> body + "\n\nGood day for it.";
             default -> body;
         };
+    }
+
+    private void setNextScheduleAnchor(Player player) {
+        BlockPos anchor = player.blockPosition().immutable();
+        String label;
+        switch (nextScheduleAnchorSlot) {
+            case 0 -> {
+                morningAnchor = anchor;
+                label = "morning";
+            }
+            case 1 -> {
+                afternoonAnchor = anchor;
+                label = "afternoon";
+            }
+            default -> {
+                eveningAnchor = anchor;
+                label = "evening";
+            }
+        }
+        nextScheduleAnchorSlot = (nextScheduleAnchorSlot + 1) % 3;
+        scheduledTarget = null;
+        scheduleCooldown = 0;
+        player.sendSystemMessage(Component.literal("§bMortimer " + label + " schedule anchor set at " + anchor.getX() + ", " + anchor.getY() + ", " + anchor.getZ() + "."));
+        say("Mortimer - Aeromancer", "Schedule noted. If I end up in the pantry, that is your fault.", player);
+    }
+
+    private BlockPos getScheduledAnchor() {
+        long t = this.level().getDayTime() % 24000L;
+        if (t < 6000) return morningAnchor;
+        if (t < 12000) return afternoonAnchor;
+        if (t < 18000) return eveningAnchor;
+        return null;
     }
 
     private String buildDialogueBody(String playerName, PlayerProgress progress) {
@@ -1143,6 +1187,7 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
         tickCoupleDialogue();
         tickRoutineDialogue();
         tickThoughtBubble();
+        tickScheduledAnchor();
 
         if (speechTicksLeft > 0) {
             speechTicksLeft--;
@@ -1242,6 +1287,43 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
             }
         }
         if (guildWorkTicks <= 0) guildWorkTarget = null;
+    }
+
+    private void tickScheduledAnchor() {
+        if (this.isPassenger()
+                || pretendSittingTicks > 0
+                || targetSeatId >= 0
+                || targetSeatBlockPos != null
+                || targetContraptionSeatEntityId >= 0
+                || followingPlayer != null
+                || guildWorkTicks > 0) {
+            return;
+        }
+
+        if (scheduleCooldown > 0) {
+            scheduleCooldown--;
+        }
+
+        if (scheduledTarget == null && scheduleCooldown <= 0) {
+            scheduledTarget = getScheduledAnchor();
+            scheduleCooldown = 20 * 30 + this.random.nextInt(20 * 30);
+        }
+
+        if (scheduledTarget == null) return;
+
+        BlockPos activeAnchor = getScheduledAnchor();
+        if (activeAnchor == null || !activeAnchor.equals(scheduledTarget)) {
+            scheduledTarget = null;
+            return;
+        }
+
+        double dist = this.distanceToBlockCenterSqr(scheduledTarget, this);
+        if (dist > 6.25D) {
+            this.getNavigation().moveTo(scheduledTarget.getX() + 0.5D, scheduledTarget.getY(), scheduledTarget.getZ() + 0.5D, 0.62D);
+        } else {
+            this.getNavigation().stop();
+            this.getLookControl().setLookAt(scheduledTarget.getX() + 0.5D, scheduledTarget.getY() + 0.5D, scheduledTarget.getZ() + 0.5D, 20.0F, 20.0F);
+        }
     }
 
     private BlockPos findGuildWorkTarget() {
@@ -1537,6 +1619,10 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
         tag.putInt("RelationshipChecks", relationshipChecks);
         tag.putInt("LogbookOpens", logbookOpens);
         if (manualGuildAnchor != null) { tag.putInt("ManualGuildX", manualGuildAnchor.getX()); tag.putInt("ManualGuildY", manualGuildAnchor.getY()); tag.putInt("ManualGuildZ", manualGuildAnchor.getZ()); }
+        if (morningAnchor != null) { tag.putInt("MorningAnchorX", morningAnchor.getX()); tag.putInt("MorningAnchorY", morningAnchor.getY()); tag.putInt("MorningAnchorZ", morningAnchor.getZ()); }
+        if (afternoonAnchor != null) { tag.putInt("AfternoonAnchorX", afternoonAnchor.getX()); tag.putInt("AfternoonAnchorY", afternoonAnchor.getY()); tag.putInt("AfternoonAnchorZ", afternoonAnchor.getZ()); }
+        if (eveningAnchor != null) { tag.putInt("EveningAnchorX", eveningAnchor.getX()); tag.putInt("EveningAnchorY", eveningAnchor.getY()); tag.putInt("EveningAnchorZ", eveningAnchor.getZ()); }
+        tag.putInt("NextScheduleAnchorSlot", nextScheduleAnchorSlot);
         if (followingPlayer != null) {
             tag.putUUID("FollowingPlayer", followingPlayer);
             tag.putInt("FollowTicksLeft", followTicksLeft);
@@ -1557,6 +1643,10 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
         if (tag.contains("RelationshipChecks")) relationshipChecks = tag.getInt("RelationshipChecks");
         if (tag.contains("LogbookOpens")) logbookOpens = tag.getInt("LogbookOpens");
         if (tag.contains("ManualGuildX")) manualGuildAnchor = new BlockPos(tag.getInt("ManualGuildX"), tag.getInt("ManualGuildY"), tag.getInt("ManualGuildZ"));
+        if (tag.contains("MorningAnchorX")) morningAnchor = new BlockPos(tag.getInt("MorningAnchorX"), tag.getInt("MorningAnchorY"), tag.getInt("MorningAnchorZ"));
+        if (tag.contains("AfternoonAnchorX")) afternoonAnchor = new BlockPos(tag.getInt("AfternoonAnchorX"), tag.getInt("AfternoonAnchorY"), tag.getInt("AfternoonAnchorZ"));
+        if (tag.contains("EveningAnchorX")) eveningAnchor = new BlockPos(tag.getInt("EveningAnchorX"), tag.getInt("EveningAnchorY"), tag.getInt("EveningAnchorZ"));
+        if (tag.contains("NextScheduleAnchorSlot")) nextScheduleAnchorSlot = tag.getInt("NextScheduleAnchorSlot");
         if (tag.hasUUID("FollowingPlayer")) {
             followingPlayer = tag.getUUID("FollowingPlayer");
             followTicksLeft = tag.getInt("FollowTicksLeft");
