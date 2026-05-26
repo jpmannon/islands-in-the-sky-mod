@@ -1,0 +1,10 @@
+{
+  "note": "Prototype narrative data for future JSON-driven dialogue. Current build still uses Java fallback lines.",
+  "relationship_tiers": ["Stranger", "Guild Associate", "Trusted Pilot", "Friend", "Crew"],
+  "ambient_examples": [
+    "Builders Tea fixes most things. The rest require torque.",
+    "No island survives alone.",
+    "Belts solve more problems than politicians.",
+    "Old ships don't creak. They reminisce."
+  ]
+}

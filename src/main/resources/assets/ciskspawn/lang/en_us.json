@@ -1,0 +1,12 @@
+{
+  "entity.ciskspawn.storykeeper": "Mortimer - Aeromancer",
+  "entity.ciskspawn.geera": "Geera - Fisherwoman",
+  "key.categories.ciskspawn": "Create: Islands in the Sky",
+  "key.ciskspawn.mortimer_travel": "Ask Mortimer to Board / Travel",
+  "key.ciskspawn.mortimer_scan_seats": "Mortimer Seat Scan / Debug",
+  "entity.ciskspawn.azerion_rook": "Azerion Rook - AZ Mk 9",
+  "entity.ciskspawn.scoria": "Scoria - Apprentice Engineer",
+  "itemGroup.ciskspawn.main": "Create: Islands in the Sky",
+  "item.ciskspawn.crew_logbook": "Crew Logbook",
+  "item.ciskspawn.guilded_compass": "Guilded Compass"
+}

@@ -134,3 +134,11 @@ classes.
 
 Add the same GeckoLib version as a manifest entry in your CurseForge
 modpack so everyone connecting has it client-side.
+
+
+## 1.0.30
+- Added uploaded Azerion/Rook placeholder geometry for testing.
+
+
+## 1.0.32
+- Swapped in updated Scoria and Azerion geometry files for testing.
