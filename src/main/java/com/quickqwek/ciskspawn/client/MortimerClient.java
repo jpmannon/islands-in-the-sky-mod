@@ -8,6 +8,10 @@ public final class MortimerClient {
 
     public static void openDialogue(MortimerDialoguePayload payload) {
         Minecraft minecraft = Minecraft.getInstance();
-        minecraft.setScreen(new MortimerDialogueScreen(payload));
+        if (payload.title().toLowerCase().contains("geera")) {
+            minecraft.setScreen(new GeeraDialogueScreen(payload));
+        } else {
+            minecraft.setScreen(new MortimerDialogueScreen(payload));
+        }
     }
 }
