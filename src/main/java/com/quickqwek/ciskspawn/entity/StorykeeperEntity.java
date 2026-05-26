@@ -166,13 +166,14 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
             progress.hasMet = true;
             progress.trust = Math.min(100, progress.trust + 1);
             String firstMeet = pickFirstMeeting(player);
+            String firstMeetBody = withWeatherNote(firstMeet, getWeather());
             say("Mortimer - Aeromancer", firstMeet, player);
 
             if (player instanceof ServerPlayer serverPlayer) {
                 PacketDistributor.sendToPlayer(serverPlayer, new MortimerDialoguePayload(
                         this.getId(),
                         "Mortimer - Aeromancer",
-                        firstMeet,
+                        firstMeetBody,
                         "Tell me about this place",
                         "What do you do here?",
                         "First time meeting Mortimer."
@@ -185,13 +186,14 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
 
         String playerName = player.getName().getString();
         String greeting = pickGreeting(playerName, progress);
+        String body = withWeatherNote(buildDialogueBody(playerName, progress), getWeather());
         say("Mortimer - Aeromancer", greeting, player);
 
         if (player instanceof ServerPlayer serverPlayer) {
             PacketDistributor.sendToPlayer(serverPlayer, new MortimerDialoguePayload(
                     this.getId(),
                     "Mortimer - Aeromancer",
-                    buildDialogueBody(playerName, progress),
+                    body,
                     "Discuss work",
                     "Travel / Board",
                     "G = board/travel, H = scan seats for debugging. Crew Logbook holds relationship, mood, and clue details."
@@ -221,6 +223,15 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
             return "You came in during this? Either you're brave or you didn't check the sky before you left. Mortimer.";
         }
         return "Haven't seen you before. That means you just arrived or you've been avoiding the guild. Either way — you're here now. Name's Mortimer.";
+    }
+
+    private String withWeatherNote(String body, String weather) {
+        return switch (weather) {
+            case "STORM" -> body + "\n\nGet inside once we're done here.";
+            case "RAIN" -> body + "\n\nMiserable day for flying.";
+            case "CLEAR" -> body + "\n\nGood day for it.";
+            default -> body;
+        };
     }
 
     private String buildDialogueBody(String playerName, PlayerProgress progress) {
@@ -1299,13 +1310,16 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
         return TimeOfDay.NIGHT;
     }
 
+    private String getWeather() {
+        if (this.level().isThundering()) return "STORM";
+        if (this.level().isRaining()) return "RAIN";
+        if (this.random.nextFloat() < 0.20f) return "OVERCAST";
+        return "CLEAR";
+    }
+
     private String pickAmbientLine(Player player) {
         if (this.isPassenger()) {
             return randomOf("Hear that wobble? Left side's carrying guilt.", "Keep her steady. The sky forgives, but not often.", "Good altitude. Bad confidence. We'll work on both.", "Scoria would call this propulsion inefficiency. Clever lad. Banker nonsense aside.", "If the compass twitches, we listen. I ignored a drift once. Once was enough.", "Nice lift. Don't get smug. The sky hates smug.");
-        }
-
-        if (this.level().isRaining()) {
-            return randomOf("Rain's good for crops. Less good for balloon cloth.", "Wet ropes lie. Check them twice.", "Clouds look heavy today.");
         }
 
         if (nearCreateBlock()) {
@@ -1314,6 +1328,41 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
 
         if (player.getFoodData().getFoodLevel() <= 8) {
             return "You eat yet, " + player.getName().getString() + "? Can't engineer on an empty stomach.";
+        }
+
+        if (this.random.nextFloat() < 0.40f) {
+            String weather = getWeather();
+            switch (weather) {
+                case "STORM" -> {
+                    return randomOf(
+                            "Get inside.",
+                            "I've made the mistake of flying in weather like this exactly once.",
+                            "Storm like this — the guild used to call them three-anchor nights. You stayed put and counted your blessings.",
+                            "Listen to it. That's not wind. That's the sky telling you something."
+                    );
+                }
+                case "RAIN" -> {
+                    return randomOf(
+                            "Don't fly in this unless you have to. I mean it.",
+                            "Geera loves the rain. I tolerate it.",
+                            "Rain sounds different at altitude. I still miss that."
+                    );
+                }
+                case "OVERCAST" -> {
+                    return randomOf(
+                            "Grey sky means grey thinking. I've learned to wait it out.",
+                            "Couldn't read these clouds when I was young. Took me years.",
+                            "Overcast is the sky being honest. It's not always a threat."
+                    );
+                }
+                case "CLEAR" -> {
+                    return randomOf(
+                            "Good flying weather. Don't waste it.",
+                            "This kind of clear doesn't last. Enjoy it.",
+                            "Take the long route. On a day like this, you earn the view."
+                    );
+                }
+            }
         }
 
         if (this.random.nextFloat() < 0.3F) {
