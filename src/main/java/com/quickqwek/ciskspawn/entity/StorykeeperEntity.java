@@ -39,6 +39,7 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 import net.neoforged.neoforge.network.PacketDistributor;
 import com.quickqwek.ciskspawn.network.MortimerDialoguePayload;
+import com.quickqwek.ciskspawn.server.PlayerStatsTracker;
 
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -160,6 +161,7 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
     }
 
     public void openDialogue(Player player) {
+        PlayerStatsTracker.recordVisit(player, "mortimer");
         PlayerProgress progress = getProgress(player);
 
         if (!progress.hasMet) {
@@ -1157,6 +1159,12 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
 
         Player nearby = this.level().getNearestPlayer(this, 9.0D);
         if (nearby != null && !this.isVehicle()) {
+            String statLine = pickStatLine(nearby);
+            if (statLine != null && this.random.nextFloat() < 0.25f) {
+                say("Mortimer - Aeromancer", statLine, nearby);
+                ambientCooldown = MIN_AMBIENT_COOLDOWN + this.random.nextInt(AMBIENT_RANDOM_EXTRA);
+                return;
+            }
             say("Mortimer - Aeromancer", pickAmbientLine(nearby), nearby);
         }
         resetAmbientCooldown();
@@ -1300,6 +1308,21 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
                 "Geera says I relax on flights. Geera lies beautifully.",
                 "Altitude is honest. It tells you exactly when you have been careless."
         );
+    }
+
+    private String pickStatLine(Player player) {
+        int deaths = PlayerStatsTracker.getDeaths(player);
+        int islands = PlayerStatsTracker.getIslandsDiscovered(player);
+        String shipName = PlayerStatsTracker.getShipName(player);
+        long daysSince = PlayerStatsTracker.getDaysSinceLastVisit(player, "mortimer");
+
+        if (daysSince >= 5) return "Haven't seen you in " + daysSince + " days. Skies treat you well, I hope.";
+        if (deaths >= 20) return "I've buried count of how many times I nearly didn't make it. You learn to stop counting.";
+        if (deaths >= 10 && this.random.nextFloat() < 0.5f) return "You're still here. That says something. Not sure what yet, but something.";
+        if (islands >= 15 && this.random.nextFloat() < 0.4f) return "You've been further than I have in the last few years. Don't tell Geera.";
+        if (islands >= 5 && this.random.nextFloat() < 0.3f) return "You've got that look. Like someone who's seen more sky than they expected to.";
+        if (shipName != null && this.random.nextFloat() < 0.3f) return "A ship named " + shipName + ". Good name. A ship needs a name before she'll trust you.";
+        return null;
     }
 
     private TimeOfDay getTimeOfDay() {

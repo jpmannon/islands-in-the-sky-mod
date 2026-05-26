@@ -33,6 +33,7 @@ import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 import com.quickqwek.ciskspawn.network.MortimerDialoguePayload;
+import com.quickqwek.ciskspawn.server.PlayerStatsTracker;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.HashMap;
@@ -122,6 +123,7 @@ public class GeeraEntity extends PathfinderMob implements GeoEntity {
     }
 
     public void openDialogue(Player player) {
+        PlayerStatsTracker.recordVisit(player, "geera");
         PlayerProgress progress = getProgress(player);
         if (!progress.hasMet) {
             progress.hasMet = true;
@@ -551,6 +553,12 @@ public class GeeraEntity extends PathfinderMob implements GeoEntity {
         }
         Player nearby = this.level().getNearestPlayer(this, 8.0D);
         if (nearby != null) {
+            String statLine = pickStatLine(nearby);
+            if (statLine != null && this.random.nextFloat() < 0.25f) {
+                sayNearby(statLine);
+                ambientCooldown = 20 * 154 + this.random.nextInt(20 * 242);
+                return;
+            }
             sayNearby(pickAmbientLine(nearby));
         }
         ambientCooldown = 20 * 154 + this.random.nextInt(20 * 242);
@@ -635,6 +643,19 @@ public class GeeraEntity extends PathfinderMob implements GeoEntity {
                 "Scoria asked for brass washers again. Very banker behavior, obviously.",
                 "One day Mortimer will ask a question before panicking. Not today, but one day."
         );
+    }
+
+    private String pickStatLine(Player player) {
+        int deaths = PlayerStatsTracker.getDeaths(player);
+        int islands = PlayerStatsTracker.getIslandsDiscovered(player);
+        String shipName = PlayerStatsTracker.getShipName(player);
+        long daysSince = PlayerStatsTracker.getDaysSinceLastVisit(player, "geera");
+
+        if (daysSince >= 5) return "Wondered where you'd got to. The sky treating you alright?";
+        if (deaths >= 10) return "Heard you've been having a rough time up there. " + deaths + " times? Mortimer would call that experience. I'd say eat something first.";
+        if (islands >= 10) return "You've been going further than most. What are you looking for out there?";
+        if (shipName != null && this.random.nextFloat() < 0.3f) return "A ship named " + shipName + ". I like that. She sounds reliable.";
+        return null;
     }
 
     private String currentMood() {
