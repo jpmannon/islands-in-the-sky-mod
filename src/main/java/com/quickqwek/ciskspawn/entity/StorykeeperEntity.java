@@ -1291,6 +1291,14 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
         );
     }
 
+    private TimeOfDay getTimeOfDay() {
+        long t = this.level().getDayTime() % 24000L;
+        if (t < 6000) return TimeOfDay.MORNING;
+        if (t < 12000) return TimeOfDay.AFTERNOON;
+        if (t < 18000) return TimeOfDay.EVENING;
+        return TimeOfDay.NIGHT;
+    }
+
     private String pickAmbientLine(Player player) {
         if (this.isPassenger()) {
             return randomOf("Hear that wobble? Left side's carrying guilt.", "Keep her steady. The sky forgives, but not often.", "Good altitude. Bad confidence. We'll work on both.", "Scoria would call this propulsion inefficiency. Clever lad. Banker nonsense aside.", "If the compass twitches, we listen. I ignored a drift once. Once was enough.", "Nice lift. Don't get smug. The sky hates smug.");
@@ -1308,16 +1316,45 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
             return "You eat yet, " + player.getName().getString() + "? Can't engineer on an empty stomach.";
         }
 
-        return randomOf(
-                "Builders Tea fixes most things. The rest require torque.",
-                "No island survives alone.",
-                "The skies reward those who adapt.",
-                "Geera says I track grease into the house. Slander, mostly.",
-                "Never trust a banker with clean cuffs.",
-                "Goblins have excellent mechanical intuition. Fantastic ears too. For engines. Mostly.",
-                "Old ships don't creak. They reminisce.",
-                "Tighten bolts twice. Sky only gives second chances to liars."
-        );
+        if (this.random.nextFloat() < 0.3F) {
+            return randomOf(
+                    "Builders Tea fixes most things. The rest require torque.",
+                    "No island survives alone.",
+                    "The skies reward those who adapt.",
+                    "Geera says I track grease into the house. Slander, mostly.",
+                    "Never trust a banker with clean cuffs.",
+                    "Goblins have excellent mechanical intuition. Fantastic ears too. For engines. Mostly.",
+                    "Old ships don't creak. They reminisce.",
+                    "Tighten bolts twice. Sky only gives second chances to liars."
+            );
+        }
+
+        return switch (getTimeOfDay()) {
+            case MORNING -> randomOf(
+                    "Up early? Good. The sky makes more sense in the morning.",
+                    "Morning clouds lie. They look soft. They're not.",
+                    "The light this time of day — used to be my favourite part of a voyage.",
+                    "Sleep well? The gusts were strange last night."
+            );
+            case AFTERNOON -> randomOf(
+                    "This is the dead hour. Too late to start, too early to stop.",
+                    "Seen Geera? She had that look this morning. I may have said something.",
+                    "Afternoon shifts everything west. Keep that in mind if you're flying.",
+                    "Not sleeping. Thinking. There's a difference."
+            );
+            case EVENING -> randomOf(
+                    "That's the light I used to navigate by. The gold hour, we called it.",
+                    "Day's ending. Never quite the same feeling twice.",
+                    "You know what I miss? Watching the sunset from altitude. Changes everything.",
+                    "Almost time. Come back tomorrow if you've got questions."
+            );
+            case NIGHT -> randomOf(
+                    "Thought I saw a ship light out past the eastern ridge. Probably nothing.",
+                    "Old habit — I still check the anchor lines before bed. No ship. Still check.",
+                    "You're up late. So am I. Doesn't mean I want to talk about it.",
+                    "The sky at night is a different sky. Takes getting used to."
+            );
+        };
     }
 
     private boolean nearCreateBlock() {
@@ -1490,6 +1527,8 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
             this.seatIndex = seatIndex;
         }
     }
+
+    private enum TimeOfDay { MORNING, AFTERNOON, EVENING, NIGHT }
 
     private static class PlayerProgress {
         int trust = 0;
