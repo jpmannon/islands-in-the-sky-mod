@@ -46,6 +46,10 @@ public class MortimerDialogueScreen extends Screen {
         return title.contains("azerion") || title.contains("az mk");
     }
 
+    private boolean isJoelle() {
+        return payload.title().toLowerCase().contains("joelle");
+    }
+
     private boolean isGeeraShop() {
         return payload.title().toLowerCase().contains("bait & tackle");
     }
@@ -96,6 +100,10 @@ public class MortimerDialogueScreen extends Screen {
             options.add(new OptionRegion(panelX + 28 + buttonW, buttonY, buttonW, buttonH, "Operational query", "azerion_query"));
             options.add(new OptionRegion(panelX + 14, buttonY + 27, buttonW, buttonH, "Relationship", "azerion_relationship"));
             options.add(new OptionRegion(panelX + 28 + buttonW, buttonY + 27, buttonW, buttonH, "Goodbye", "close"));
+        } else if (isJoelle()) {
+            options.add(new OptionRegion(panelX + 14, buttonY, buttonW, buttonH, "Cooking quest", "joelle_quest"));
+            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY, buttonW, buttonH, "Ask for a recipe tip", "joelle_recipe"));
+            options.add(new OptionRegion(panelX + 14, buttonY + 27, panelW - 28, buttonH, "Goodbye", "close"));
         } else if (isScoria()) {
             options.add(new OptionRegion(panelX + 14, buttonY, buttonW, buttonH, "Engineering lesson", "scoria_lesson"));
             options.add(new OptionRegion(panelX + 28 + buttonW, buttonY, buttonW, buttonH, "About Mortimer", "scoria_mortimer"));

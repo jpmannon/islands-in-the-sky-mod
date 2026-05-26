@@ -28,6 +28,13 @@ public final class ModEntities {
                             .clientTrackingRange(10)
                             .build("geera"));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<JoelleEntity>> JOELLE =
+            ENTITY_TYPES.register("joelle",
+                    () -> EntityType.Builder.<JoelleEntity>of(JoelleEntity::new, MobCategory.MISC)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(10)
+                            .build("joelle"));
+
     public static final DeferredHolder<EntityType<?>, EntityType<ScoriaEntity>> SCORIA =
             ENTITY_TYPES.register("scoria",
                     () -> EntityType.Builder.<ScoriaEntity>of(ScoriaEntity::new, MobCategory.CREATURE)
@@ -49,6 +56,7 @@ public final class ModEntities {
     private static void onAttributeCreation(EntityAttributeCreationEvent event) {
         event.put(STORYKEEPER.get(), StorykeeperEntity.createAttributes().build());
         event.put(GEERA.get(), GeeraEntity.createAttributes().build());
+        event.put(JOELLE.get(), JoelleEntity.createAttributes().build());
         event.put(SCORIA.get(), ScoriaEntity.createAttributes().build());
         event.put(AZERION_ROOK.get(), AzerionEntity.createAttributes().build());
     }
