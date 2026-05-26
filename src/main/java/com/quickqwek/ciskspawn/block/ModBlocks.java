@@ -20,5 +20,13 @@ public final class ModBlocks {
                             .sound(SoundType.STONE)
             ));
 
+    public static final DeferredHolder<Block, SettlementMarkerBlock> SETTLEMENT_MARKER =
+            BLOCKS.register("settlement_marker", () -> new SettlementMarkerBlock(
+                    BlockBehaviour.Properties.of()
+                            .strength(3.5F)
+                            .lightLevel(state -> 8)
+                            .sound(SoundType.AMETHYST)
+            ));
+
     private ModBlocks() {}
 }

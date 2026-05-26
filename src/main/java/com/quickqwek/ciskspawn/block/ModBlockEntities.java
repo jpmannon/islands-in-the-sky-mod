@@ -14,5 +14,9 @@ public final class ModBlockEntities {
             BLOCK_ENTITY_TYPES.register("npc_anchor_be",
                     () -> BlockEntityType.Builder.of(NpcAnchorBlockEntity::new, ModBlocks.NPC_ANCHOR.get()).build(null));
 
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SettlementMarkerBlockEntity>> SETTLEMENT_MARKER_BE =
+            BLOCK_ENTITY_TYPES.register("settlement_marker_be",
+                    () -> BlockEntityType.Builder.of(SettlementMarkerBlockEntity::new, ModBlocks.SETTLEMENT_MARKER.get()).build(null));
+
     private ModBlockEntities() {}
 }

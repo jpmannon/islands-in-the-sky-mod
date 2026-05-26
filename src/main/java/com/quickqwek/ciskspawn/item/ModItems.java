@@ -20,5 +20,8 @@ public final class ModItems {
     public static final DeferredHolder<Item, BlockItem> NPC_ANCHOR_ITEM = ITEMS.register("npc_anchor",
             () -> new BlockItem(ModBlocks.NPC_ANCHOR.get(), new Item.Properties()));
 
+    public static final DeferredHolder<Item, BlockItem> SETTLEMENT_MARKER_ITEM = ITEMS.register("settlement_marker",
+            () -> new BlockItem(ModBlocks.SETTLEMENT_MARKER.get(), new Item.Properties()));
+
     private ModItems() {}
 }

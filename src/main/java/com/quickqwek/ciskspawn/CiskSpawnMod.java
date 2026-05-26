@@ -2,6 +2,7 @@ package com.quickqwek.ciskspawn;
 
 import com.quickqwek.ciskspawn.block.ModBlockEntities;
 import com.quickqwek.ciskspawn.block.ModBlocks;
+import com.quickqwek.ciskspawn.command.CiskSpawnCommands;
 import com.quickqwek.ciskspawn.entity.ModEntities;
 import com.quickqwek.ciskspawn.item.ModItems;
 import com.quickqwek.ciskspawn.item.ModCreativeTabs;
@@ -30,6 +31,7 @@ public class CiskSpawnMod {
 
         NeoForge.EVENT_BUS.register(new SpawnHandler());
         NeoForge.EVENT_BUS.register(PlayerStatsTracker.class);
+        NeoForge.EVENT_BUS.addListener(CiskSpawnCommands::register);
 
         LOG.info("[CISK] Mod constructor complete.");
     }

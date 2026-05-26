@@ -20,6 +20,7 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.CREW_LOGBOOK.get());
                         output.accept(ModItems.GUILDED_COMPASS.get());
                         output.accept(ModItems.NPC_ANCHOR_ITEM.get());
+                        output.accept(ModItems.SETTLEMENT_MARKER_ITEM.get());
                     })
                     .build());
 
