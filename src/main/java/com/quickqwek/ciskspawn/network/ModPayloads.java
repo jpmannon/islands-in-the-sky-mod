@@ -6,6 +6,7 @@ import com.quickqwek.ciskspawn.client.MortimerClient;
 import com.quickqwek.ciskspawn.entity.StorykeeperEntity;
 import com.quickqwek.ciskspawn.entity.GeeraEntity;
 import com.quickqwek.ciskspawn.entity.JoelleEntity;
+import com.quickqwek.ciskspawn.entity.RamoneEntity;
 import com.quickqwek.ciskspawn.entity.ScoriaEntity;
 import com.quickqwek.ciskspawn.entity.AzerionEntity;
 import net.minecraft.server.level.ServerPlayer;
@@ -63,6 +64,8 @@ public final class ModPayloads {
                         azerion.handleAzerionAction(player, payload.action());
                     } else if (entity instanceof JoelleEntity joelle && joelle.distanceTo(player) < 32.0F) {
                         joelle.handleJoelleAction(player, payload.action());
+                    } else if (entity instanceof RamoneEntity ramone && ramone.distanceTo(player) < 32.0F) {
+                        ramone.handleRamoneAction(player, payload.action());
                     }
                 })
         );

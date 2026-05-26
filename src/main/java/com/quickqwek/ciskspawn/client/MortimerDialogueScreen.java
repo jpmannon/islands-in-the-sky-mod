@@ -50,6 +50,10 @@ public class MortimerDialogueScreen extends Screen {
         return payload.title().toLowerCase().contains("joelle");
     }
 
+    private boolean isRamone() {
+        return payload.title().toLowerCase().contains("ramone");
+    }
+
     private boolean isGeeraShop() {
         return payload.title().toLowerCase().contains("bait & tackle");
     }
@@ -104,6 +108,11 @@ public class MortimerDialogueScreen extends Screen {
             options.add(new OptionRegion(panelX + 14, buttonY, buttonW, buttonH, "Cooking quest", "joelle_quest"));
             options.add(new OptionRegion(panelX + 28 + buttonW, buttonY, buttonW, buttonH, "Ask for a recipe tip", "joelle_recipe"));
             options.add(new OptionRegion(panelX + 14, buttonY + 27, panelW - 28, buttonH, "Goodbye", "close"));
+        } else if (isRamone()) {
+            options.add(new OptionRegion(panelX + 14, buttonY, buttonW, buttonH, "Garden work", "ramone_quest"));
+            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY, buttonW, buttonH, "Garden tip", "ramone_garden"));
+            options.add(new OptionRegion(panelX + 14, buttonY + 27, buttonW, buttonH, "About the sky", "ramone_sky"));
+            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY + 27, buttonW, buttonH, "Goodbye", "close"));
         } else if (isScoria()) {
             options.add(new OptionRegion(panelX + 14, buttonY, buttonW, buttonH, "Engineering lesson", "scoria_lesson"));
             options.add(new OptionRegion(panelX + 28 + buttonW, buttonY, buttonW, buttonH, "About Mortimer", "scoria_mortimer"));
@@ -137,7 +146,7 @@ public class MortimerDialogueScreen extends Screen {
 
         graphics.drawString(this.font, payload.title(), panelX + 16, y + 12, BRASS, false);
         graphics.hLine(panelX + 14, panelX + panelW - 14, y + 27, BRASS_DARK);
-        String subtitle = isCrewLog() ? "✦ Persistent crew notes" : (isGeeraShop() ? "✦ Dockside shop" : (isAzerion() ? "✦ CBC artillery training interface" : (isScoria() ? "✦ Apprentice engineering notes" : (isGeera() ? "✦ Dockside fishing ledger" : "✦ Aero Guild projection interface"))));
+        String subtitle = isCrewLog() ? "✦ Persistent crew notes" : (isGeeraShop() ? "✦ Dockside shop" : (isAzerion() ? "✦ CBC artillery training interface" : (isRamone() ? "✦ Garden ledger" : (isScoria() ? "✦ Apprentice engineering notes" : (isGeera() ? "✦ Dockside fishing ledger" : "✦ Aero Guild projection interface")))));
         graphics.drawString(this.font, subtitle, panelX + 16, y + 32, MUTED, false);
 
         int textY = y + 50;
