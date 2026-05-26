@@ -23,5 +23,8 @@ public final class ModItems {
     public static final DeferredHolder<Item, BlockItem> SETTLEMENT_MARKER_ITEM = ITEMS.register("settlement_marker",
             () -> new BlockItem(ModBlocks.SETTLEMENT_MARKER.get(), new Item.Properties()));
 
+    public static final DeferredHolder<Item, WaypointRecorderItem> WAYPOINT_RECORDER = ITEMS.register("waypoint_recorder",
+            () -> new WaypointRecorderItem(new Item.Properties().stacksTo(1)));
+
     private ModItems() {}
 }

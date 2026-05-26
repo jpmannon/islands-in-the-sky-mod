@@ -21,6 +21,7 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.GUILDED_COMPASS.get());
                         output.accept(ModItems.NPC_ANCHOR_ITEM.get());
                         output.accept(ModItems.SETTLEMENT_MARKER_ITEM.get());
+                        output.accept(ModItems.WAYPOINT_RECORDER.get());
                     })
                     .build());
 
