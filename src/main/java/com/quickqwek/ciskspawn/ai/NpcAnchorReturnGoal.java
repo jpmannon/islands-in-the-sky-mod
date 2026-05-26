@@ -5,16 +5,21 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.Goal;
 
 import java.util.EnumSet;
+import java.util.function.Supplier;
 
 public class NpcAnchorReturnGoal extends Goal {
     private final PathfinderMob mob;
-    private final BlockPos homePos;
+    private final Supplier<BlockPos> homePosSupplier;
     private final double speedModifier;
     private final float maxDistance;
 
     public NpcAnchorReturnGoal(PathfinderMob mob, BlockPos homePos, double speedModifier, float maxDistance) {
+        this(mob, () -> homePos, speedModifier, maxDistance);
+    }
+
+    public NpcAnchorReturnGoal(PathfinderMob mob, Supplier<BlockPos> homePosSupplier, double speedModifier, float maxDistance) {
         this.mob = mob;
-        this.homePos = homePos;
+        this.homePosSupplier = homePosSupplier;
         this.speedModifier = speedModifier;
         this.maxDistance = maxDistance;
         this.setFlags(EnumSet.of(Goal.Flag.MOVE));
@@ -22,28 +27,40 @@ public class NpcAnchorReturnGoal extends Goal {
 
     @Override
     public boolean canUse() {
+        BlockPos homePos = this.homePosSupplier.get();
+        if (homePos == null) {
+            return false;
+        }
         return this.mob.distanceToSqr(
-                this.homePos.getX() + 0.5D,
-                this.homePos.getY() + 0.5D,
-                this.homePos.getZ() + 0.5D
+                homePos.getX() + 0.5D,
+                homePos.getY() + 0.5D,
+                homePos.getZ() + 0.5D
         ) > this.maxDistance * this.maxDistance;
     }
 
     @Override
     public boolean canContinueToUse() {
+        BlockPos homePos = this.homePosSupplier.get();
+        if (homePos == null) {
+            return false;
+        }
         return this.mob.distanceToSqr(
-                this.homePos.getX() + 0.5D,
-                this.homePos.getY() + 0.5D,
-                this.homePos.getZ() + 0.5D
+                homePos.getX() + 0.5D,
+                homePos.getY() + 0.5D,
+                homePos.getZ() + 0.5D
         ) > 4.0D;
     }
 
     @Override
     public void start() {
+        BlockPos homePos = this.homePosSupplier.get();
+        if (homePos == null) {
+            return;
+        }
         this.mob.getNavigation().moveTo(
-                this.homePos.getX() + 0.5D,
-                this.homePos.getY(),
-                this.homePos.getZ() + 0.5D,
+                homePos.getX() + 0.5D,
+                homePos.getY(),
+                homePos.getZ() + 0.5D,
                 this.speedModifier
         );
     }

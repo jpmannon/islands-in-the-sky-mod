@@ -11,6 +11,9 @@ import com.quickqwek.ciskspawn.entity.VelhoEntity;
 import com.quickqwek.ciskspawn.entity.ScoriaEntity;
 import com.quickqwek.ciskspawn.entity.AzerionEntity;
 import com.quickqwek.ciskspawn.entity.TarnEntity;
+import com.quickqwek.ciskspawn.entity.CadeEntity;
+import com.quickqwek.ciskspawn.entity.ZiikoEntity;
+import com.quickqwek.ciskspawn.entity.AgathaEntity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.neoforged.api.distmarker.Dist;
@@ -72,6 +75,12 @@ public final class ModPayloads {
                         velho.handleVelhoAction(player, payload.action());
                     } else if (entity instanceof TarnEntity tarn && tarn.distanceTo(player) < 32.0F) {
                         tarn.handleTarnAction(player, payload.action());
+                    } else if (entity instanceof CadeEntity cade && cade.distanceTo(player) < 32.0F) {
+                        cade.handleCadeAction(player, payload.action());
+                    } else if (entity instanceof ZiikoEntity ziiko && ziiko.distanceTo(player) < 32.0F) {
+                        ziiko.handleZiikoAction(player, payload.action());
+                    } else if (entity instanceof AgathaEntity agatha && agatha.distanceTo(player) < 32.0F) {
+                        agatha.handleAgathaAction(player, payload.action());
                     }
                 })
         );

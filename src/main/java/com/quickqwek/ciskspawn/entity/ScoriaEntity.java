@@ -1,5 +1,8 @@
 package com.quickqwek.ciskspawn.entity;
 
+import com.quickqwek.ciskspawn.ai.NpcAnchorReturnGoal;
+import com.quickqwek.ciskspawn.ai.NpcWaypointGoal;
+
 import com.quickqwek.ciskspawn.network.MortimerDialoguePayload;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -55,6 +58,7 @@ public class ScoriaEntity extends PathfinderMob implements GeoEntity {
     private int projectStage = 0;
     private int projectSessions = 0;
     private int ambientCooldown = 20 * 154;
+    private BlockPos homePos = null;
     private int projectCooldown = 20 * 40;
     private BlockPos manualProjectAnchor = null;
     private BlockPos projectTarget = null;
@@ -77,12 +81,18 @@ public class ScoriaEntity extends PathfinderMob implements GeoEntity {
         return false;
     }
 
+    public void setHomePos(BlockPos pos) {
+        this.homePos = pos;
+    }
+
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(2, new WaterAvoidingRandomStrollGoal(this, 0.45D));
+        this.goalSelector.addGoal(1, new NpcAnchorReturnGoal(this, () -> this.homePos, 0.55D, 12.0F));
+        this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 0.45D));
         this.goalSelector.addGoal(3, new LookAtPlayerGoal(this, Player.class, 8.0F));
         this.goalSelector.addGoal(4, new RandomLookAroundGoal(this));
+        this.goalSelector.addGoal(5, new NpcWaypointGoal(this, 0.45D));
     }
 
     @Override
@@ -494,6 +504,11 @@ public class ScoriaEntity extends PathfinderMob implements GeoEntity {
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
+        if (homePos != null) {
+            tag.putInt("HomePosX", homePos.getX());
+            tag.putInt("HomePosY", homePos.getY());
+            tag.putInt("HomePosZ", homePos.getZ());
+        }
         ListTag list = new ListTag();
         for (Map.Entry<UUID, PlayerProgress> entry : progressByPlayer.entrySet()) {
             CompoundTag playerTag = new CompoundTag();
@@ -515,6 +530,13 @@ public class ScoriaEntity extends PathfinderMob implements GeoEntity {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        if (tag.contains("HomePosX")) {
+            homePos = new BlockPos(
+                    tag.getInt("HomePosX"),
+                    tag.getInt("HomePosY"),
+                    tag.getInt("HomePosZ")
+            );
+        }
         progressByPlayer.clear();
         if (tag.contains("ScoriaProgress", Tag.TAG_LIST)) {
             ListTag list = tag.getList("ScoriaProgress", Tag.TAG_COMPOUND);

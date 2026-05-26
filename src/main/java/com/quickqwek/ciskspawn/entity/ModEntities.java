@@ -70,6 +70,27 @@ public final class ModEntities {
                             .clientTrackingRange(10)
                             .build("tarn"));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<CadeEntity>> CADE =
+            ENTITY_TYPES.register("cade",
+                    () -> EntityType.Builder.<CadeEntity>of(CadeEntity::new, MobCategory.MISC)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(10)
+                            .build("cade"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<ZiikoEntity>> ZIIKO =
+            ENTITY_TYPES.register("ziiko",
+                    () -> EntityType.Builder.<ZiikoEntity>of(ZiikoEntity::new, MobCategory.MISC)
+                            .sized(0.4F, 0.9F)
+                            .clientTrackingRange(10)
+                            .build("ziiko"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<AgathaEntity>> AGATHA =
+            ENTITY_TYPES.register("agatha",
+                    () -> EntityType.Builder.<AgathaEntity>of(AgathaEntity::new, MobCategory.MISC)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(10)
+                            .build("agatha"));
+
     public static void registerAttributesEvent(IEventBus modBus) {
         modBus.addListener(ModEntities::onAttributeCreation);
     }
@@ -83,6 +104,9 @@ public final class ModEntities {
         event.put(SCORIA.get(), ScoriaEntity.createAttributes().build());
         event.put(AZERION_ROOK.get(), AzerionEntity.createAttributes().build());
         event.put(TARN.get(), TarnEntity.createAttributes().build());
+        event.put(CADE.get(), CadeEntity.createAttributes().build());
+        event.put(ZIIKO.get(), ZiikoEntity.createAttributes().build());
+        event.put(AGATHA.get(), AgathaEntity.createAttributes().build());
     }
 
     private ModEntities() {}
