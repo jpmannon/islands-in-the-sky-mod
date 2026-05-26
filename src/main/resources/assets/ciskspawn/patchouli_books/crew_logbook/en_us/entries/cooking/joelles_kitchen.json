@@ -1,0 +1,12 @@
+{
+  "name": "Joelle's Kitchen",
+  "icon": "minecraft:bowl",
+  "category": "ciskspawn:cooking",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "A good meal is a conversation. Joelle speaks first, usually before you know what you needed to hear."
+    }
+  ]
+}

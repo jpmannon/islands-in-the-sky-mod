@@ -1,0 +1,12 @@
+{
+  "name": "Tarn's Field Medicine",
+  "icon": "minecraft:potion",
+  "category": "ciskspawn:healing",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Hunger is a wound. Pain is information. Overconfidence kills more patients than weather. Tarn does not soften these lessons, which is probably why they work."
+    }
+  ]
+}

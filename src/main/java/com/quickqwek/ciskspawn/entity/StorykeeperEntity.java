@@ -210,7 +210,7 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
                     body,
                     "Discuss work",
                     "Travel / Board",
-                    "G = board/travel, H = scan seats for debugging. Crew Logbook holds relationship, mood, and clue details."
+                    "G = board/travel, H = scan seats for debugging."
             ));
         }
     }
@@ -221,10 +221,9 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
             case "scan_seats" -> scanSeatEnvironment(player);
             case "follow" -> askToFollow(player);
             case "talk" -> sendQuestDialogue(player, getProgress(player));
-            case "relationship" -> describeRelationship(player);
-            case "logbook" -> crewLog(player);
+            case "relationship", "logbook" -> say("Mortimer - Aeromancer", "Use the Crew Logbook for that now. Patchouli finally gave the notes somewhere proper to live.", player);
             case "guild_status" -> guildStatus(player);
-            case "scoria_tracker" -> scoriaTracker(player);
+            case "scoria_tracker" -> say("Mortimer - Aeromancer", "Scoria's notes are in the Crew Logbook now. Which is safer than asking me to organize them.", player);
             case "guild_set_anchor" -> setGuildAnchorHere(player);
             case "guild_call_anchor" -> callToGuildAnchor(player);
             case "emote" -> showEmote(randomOf("🔧", "☕", "⚙", "💭", "🧭"));

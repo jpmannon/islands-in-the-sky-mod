@@ -109,7 +109,7 @@ public class ZiikoEntity extends PathfinderMob implements GeoEntity {
                     body,
                     "Bring materials",
                     "Ask about materials",
-                    "Trust: " + progress.trust + "/100. Forge work done: " + progress.forgeCount + "."
+                    "Smithing notes are kept in the Crew Logbook."
             ));
         }
     }

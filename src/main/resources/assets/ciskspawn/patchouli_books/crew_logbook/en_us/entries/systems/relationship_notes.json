@@ -1,0 +1,12 @@
+{
+  "name": "Relationship Notes",
+  "icon": "minecraft:name_tag",
+  "category": "ciskspawn:systems",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The old logbook tried to read nearby trust directly. This Patchouli edition keeps the explanation here and leaves the living numbers to the people themselves."
+    }
+  ]
+}

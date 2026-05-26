@@ -1,0 +1,12 @@
+{
+  "name": "Starcatcher Fishing Quests",
+  "icon": "minecraft:cod",
+  "category": "ciskspawn:fishing",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Fishing work begins as errands and becomes a way to learn the water around an island. Geera pays attention to who brings the catch back."
+    }
+  ]
+}

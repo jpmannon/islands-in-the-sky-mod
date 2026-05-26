@@ -1,0 +1,12 @@
+{
+  "name": "Public Entry / Commons",
+  "icon": "minecraft:oak_door",
+  "category": "ciskspawn:guild",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The commons are where a traveler becomes less theoretical. Maps are argued over here. Boots dry here. Someone is always pretending not to listen."
+    }
+  ]
+}

@@ -111,9 +111,7 @@ public class AzerionEntity extends PathfinderMob implements GeoEntity {
         String body = "AZERION ROOK MODEL A-Z MK. 9\nHigh Caliber Munitions Autonomous Guardian Unit\n\n"
                 + greeting + "\n\n"
                 + "Former Abalone crew. Current status: retired, technically. Azerion disagrees with the definition.\n\n"
-                + "Training focus: Create Big Cannons basics, safe loading, recoil discipline, targeting, and shipboard artillery etiquette.\n\n"
-                + "Trust: " + progress.trust + "/100. Personal drill stage: " + progress.drillStage + "/4.\n"
-                + "Global artillery stage: " + artilleryStage + "/4. Drills completed: " + drillsCompleted + ".";
+                + "Training focus: Create Big Cannons basics, safe loading, recoil discipline, targeting, and shipboard artillery etiquette.";
         say(player, greeting);
         if (player instanceof ServerPlayer serverPlayer) {
             PacketDistributor.sendToPlayer(serverPlayer, new MortimerDialoguePayload(
@@ -132,8 +130,7 @@ public class AzerionEntity extends PathfinderMob implements GeoEntity {
             case "azerion_drill" -> cannonDrill(player);
             case "azerion_query" -> operationalQuery(player);
             case "azerion_relationship" -> relationshipStatus(player);
-            case "azerion_record" -> crewRecord(player);
-            case "azerion_log" -> crewRecord(player);
+            case "azerion_record", "azerion_log" -> say(player, "Crew records have been moved to the Crew Logbook. This is efficient.");
             default -> openDialogue(player);
         }
     }

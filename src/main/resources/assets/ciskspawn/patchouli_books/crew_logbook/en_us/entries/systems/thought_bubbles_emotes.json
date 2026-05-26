@@ -1,0 +1,12 @@
+{
+  "name": "Thought Bubbles / Emotes",
+  "icon": "minecraft:glow_ink_sac",
+  "category": "ciskspawn:systems",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Small reactions can say what a formal dialogue box cannot: worry, attention, weather sense, irritation, fondness. The sky is not the only thing with moods."
+    }
+  ]
+}

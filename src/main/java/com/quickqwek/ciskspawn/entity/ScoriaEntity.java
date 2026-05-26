@@ -116,7 +116,6 @@ public class ScoriaEntity extends PathfinderMob implements GeoEntity {
                 + "Scoria keeps his coat too clean for a dockhand and too practical for a banker. "
                 + "He is trying very hard not to look proud of the pressure-valve diagrams tucked under his arm.\n\n"
                 + "Secret status: apprentice aero-engineer. Mortimer still thinks 'banker clothes' explain everything.\n\n"
-                + "Trust: " + progress.trust + "/100. Personal quest stage: " + progress.questStage + "/3.\n"
                 + "Reveal progress: " + revealProgress + "/4. Tech lessons given: " + techLessonsGiven + ".\n"
                 + "Project stage: " + projectStage + "/4. Project sessions: " + projectSessions + ".";
         say(player, greeting);
@@ -138,7 +137,7 @@ public class ScoriaEntity extends PathfinderMob implements GeoEntity {
             case "scoria_mortimer" -> aboutMortimer(player);
             case "scoria_clue" -> clueHint(player);
             case "scoria_reveal" -> revealStep(player);
-            case "scoria_log" -> logPage(player);
+            case "scoria_log" -> say(player, "The logbook has the public version. Please remember it is incomplete.");
             case "scoria_emote" -> showEmote("⚙");
             case "scoria_project" -> projectStatus(player);
             case "scoria_set_project" -> setProjectHere(player);

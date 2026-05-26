@@ -106,7 +106,7 @@ public class VelhoEntity extends PathfinderMob implements GeoEntity {
                     body,
                     "Enchanting work",
                     "Enchanting tip",
-                    "Trust: " + progress.trust + "/100. Quest stage: " + Math.min(progress.questStage + 1, 3) + "/3."
+                    "Workshop notes are kept in the Crew Logbook."
             ));
         }
     }

@@ -1,0 +1,17 @@
+{
+  "name": "Ramone",
+  "icon": "minecraft:wheat_seeds",
+  "category": "ciskspawn:crew",
+  "sortnum": 5,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Ramone grows food and says less than he knows. His garden is quiet in the way a good watchpost is quiet."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Crew Note",
+      "text": "He used to know the sky from another life. He is not unfriendly. He simply prefers interruptions to have a reason."
+    }
+  ]
+}

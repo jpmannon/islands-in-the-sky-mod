@@ -1,0 +1,7 @@
+{
+  "name": "Crew Logbook",
+  "landing_text": "A weathered guild ledger for skyfaring notes, crew records, practical lessons, and half-finished thoughts written between islands.",
+  "version": 1,
+  "creative_tab": "ciskspawn:main",
+  "use_resource_pack": true
+}

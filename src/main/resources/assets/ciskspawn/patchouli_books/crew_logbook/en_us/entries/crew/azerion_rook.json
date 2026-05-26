@@ -1,0 +1,17 @@
+{
+  "name": "Azerion Rook Model A-Z Mk. 9",
+  "icon": "minecraft:crossbow",
+  "category": "ciskspawn:crew",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Azerion Rook is precise, dry, and very difficult to surprise. His full designation is longer than most introductions and appears to matter to him in a quiet way."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Crew Note",
+      "text": "He teaches artillery as a system: nomenclature, loading order, trajectory, etiquette. He does not use contractions. He does notice care."
+    }
+  ]
+}

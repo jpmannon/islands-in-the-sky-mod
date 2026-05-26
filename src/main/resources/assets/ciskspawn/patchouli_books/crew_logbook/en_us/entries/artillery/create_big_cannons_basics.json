@@ -1,0 +1,12 @@
+{
+  "name": "Create Big Cannons Basics",
+  "icon": "minecraft:gunpowder",
+  "category": "ciskspawn:artillery",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Powder before shot. Clear the zone. Announce intent. Report after discharge. The target does not care what you meant to do."
+    }
+  ]
+}

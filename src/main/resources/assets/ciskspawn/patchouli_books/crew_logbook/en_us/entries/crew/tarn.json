@@ -1,0 +1,17 @@
+{
+  "name": "Tarn",
+  "icon": "minecraft:potion",
+  "category": "ciskspawn:crew",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Tarn is ship's physician, herbalist, and the sort of person who diagnoses you before you finish lying about being fine."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Crew Note",
+      "text": "Her medicine is practical, unsettlingly observant, and effective. If she offers to make something that holds, keep it close."
+    }
+  ]
+}

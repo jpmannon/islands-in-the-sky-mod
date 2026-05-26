@@ -1,0 +1,12 @@
+{
+  "name": "NPC Dialogue",
+  "icon": "minecraft:paper",
+  "category": "ciskspawn:systems",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Conversations are kept simple on purpose. Talk, ask for work, buy what is offered, and leave room for the person in front of you to be a person."
+    }
+  ]
+}

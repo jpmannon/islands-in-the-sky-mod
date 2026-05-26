@@ -1,0 +1,12 @@
+{
+  "name": "Engineering Workshops",
+  "icon": "minecraft:crafting_table",
+  "category": "ciskspawn:guild",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The workshops keep the guild from becoming only romance and weather. Machines make promises too. They simply require more maintenance."
+    }
+  ]
+}

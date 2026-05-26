@@ -1,0 +1,12 @@
+{
+  "name": "Azerion's Cannon Drills",
+  "icon": "minecraft:crossbow",
+  "category": "ciskspawn:artillery",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Azerion's drills begin with names, continue through sequence, and end with etiquette. This is not decoration. It is survival arranged into steps."
+    }
+  ]
+}

@@ -111,7 +111,7 @@ public class CadeEntity extends PathfinderMob implements GeoEntity {
                     body,
                     "Combat training",
                     "Combat tip",
-                    "Trust: " + progress.trust + "/100. Training stage: " + Math.min(progress.questStage, 3) + "/3."
+                    "Training notes are kept in the Crew Logbook."
             ));
         }
     }

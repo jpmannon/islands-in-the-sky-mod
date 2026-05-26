@@ -1,0 +1,12 @@
+{
+  "name": "Scoria's Apprenticeship",
+  "icon": "minecraft:copper_ingot",
+  "category": "ciskspawn:engineering",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Scoria is learning the kind of engineering that does not forgive vague answers. She is also learning how difficult it is to tell family the truth at the perfect time."
+    }
+  ]
+}

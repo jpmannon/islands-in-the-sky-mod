@@ -1,0 +1,12 @@
+{
+  "name": "Aetherium Core Chamber",
+  "icon": "minecraft:amethyst_shard",
+  "category": "ciskspawn:guild",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The core chamber is warmer than expected and quieter than it should be. The ledger recommends touching nothing unless someone very qualified says otherwise."
+    }
+  ]
+}

@@ -120,7 +120,7 @@ public class AgathaEntity extends PathfinderMob implements GeoEntity {
                     body,
                     "Ask a favour",
                     "Ask about the cats",
-                    "Trust: " + progress.trust + "/100. Favour stage: " + Math.min(progress.questStage, 3) + "/3."
+                    "Brewing notes are kept in the Crew Logbook."
             ));
         }
     }

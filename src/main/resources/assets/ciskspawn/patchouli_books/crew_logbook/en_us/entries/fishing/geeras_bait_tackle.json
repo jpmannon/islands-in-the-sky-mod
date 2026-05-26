@@ -1,0 +1,12 @@
+{
+  "name": "Geera's Bait & Tackle",
+  "icon": "minecraft:tropical_fish",
+  "category": "ciskspawn:fishing",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Geera's shop is practical, compact, and better informed than a shop has any right to be. Bait is for sale. Rumors may cost extra."
+    }
+  ]
+}

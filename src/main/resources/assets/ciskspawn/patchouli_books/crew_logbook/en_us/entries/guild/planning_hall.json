@@ -1,0 +1,12 @@
+{
+  "name": "Planning Hall",
+  "icon": "minecraft:cartography_table",
+  "category": "ciskspawn:guild",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The planning hall is for routes, provisions, and the ritual of explaining why an obviously bad idea might work this time."
+    }
+  ]
+}

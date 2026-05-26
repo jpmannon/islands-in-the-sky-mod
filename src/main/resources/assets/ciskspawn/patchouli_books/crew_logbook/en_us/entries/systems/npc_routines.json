@@ -1,0 +1,12 @@
+{
+  "name": "NPC Routines",
+  "icon": "minecraft:clock",
+  "category": "ciskspawn:systems",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "People move through the day. Morning, afternoon, evening, and night each pull them toward different habits. The guild is livelier when you notice the rhythm."
+    }
+  ]
+}

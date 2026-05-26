@@ -1,0 +1,12 @@
+{
+  "name": "Garden Notes",
+  "icon": "minecraft:wheat",
+  "category": "ciskspawn:farming",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Ramone's garden is not decorative. It is food, memory, discipline, and a way to keep both feet on solid ground for a while."
+    }
+  ]
+}

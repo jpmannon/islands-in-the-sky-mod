@@ -107,7 +107,7 @@ public class RamoneEntity extends PathfinderMob implements GeoEntity {
                     body,
                     "Garden work",
                     "Garden tip",
-                    "Trust: " + progress.trust + "/100. Quest stage: " + Math.min(progress.questStage + 1, 3) + "/3."
+                    "Garden notes are kept in the Crew Logbook."
             ));
         }
     }

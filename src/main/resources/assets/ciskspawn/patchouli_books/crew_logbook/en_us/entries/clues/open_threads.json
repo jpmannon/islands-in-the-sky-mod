@@ -1,0 +1,17 @@
+{
+  "name": "Open Threads",
+  "icon": "minecraft:spyglass",
+  "category": "ciskspawn:clues",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Scoria's banker story remains suspicious. Azerion's maintenance logs go back nineteen years. Velho knows more about both than he says."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Margin Note",
+      "text": "Most of the map is still waiting. The more islands discovered, the more useful these loose threads become."
+    }
+  ]
+}

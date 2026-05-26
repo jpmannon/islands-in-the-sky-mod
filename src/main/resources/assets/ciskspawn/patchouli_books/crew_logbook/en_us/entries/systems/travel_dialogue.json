@@ -1,0 +1,12 @@
+{
+  "name": "Travel Dialogue",
+  "icon": "minecraft:map",
+  "category": "ciskspawn:systems",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Travel talk belongs to the journey: routes, weather, nerves, old stories, and the quiet relief of seeing the next island come into view."
+    }
+  ]
+}

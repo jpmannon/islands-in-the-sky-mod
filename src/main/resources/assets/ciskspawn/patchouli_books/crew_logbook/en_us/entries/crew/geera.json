@@ -1,0 +1,17 @@
+{
+  "name": "Geera",
+  "icon": "minecraft:fishing_rod",
+  "category": "ciskspawn:crew",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Geera runs the dockside fishing work with a sharp eye and very little patience for nonsense. She sells bait, trades rumors, and always seems to know more than she has said."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Crew Note",
+      "text": "Her shop is still its own thing. Bring catches, ask questions, and listen when she mentions the weather."
+    }
+  ]
+}

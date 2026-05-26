@@ -1,0 +1,12 @@
+{
+  "name": "Create Mod Tutorials",
+  "icon": "minecraft:andesite",
+  "category": "ciskspawn:engineering",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Create contraptions reward clear thinking: power first, motion second, safety before pride. If the machine screams, that is also a kind of documentation."
+    }
+  ]
+}

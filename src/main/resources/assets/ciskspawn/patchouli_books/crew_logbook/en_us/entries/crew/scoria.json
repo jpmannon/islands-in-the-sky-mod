@@ -1,0 +1,17 @@
+{
+  "name": "Scoria",
+  "icon": "minecraft:copper_ingot",
+  "category": "ciskspawn:crew",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Scoria says she is involved in finance. The ledger suspects this is not the whole truth. Her questions drift toward propulsion, levitite, and whether a reveal can be made perfect enough."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Clue",
+      "text": "If Scoria trusts you, the banker story begins to fray. Do not pull too hard. She is building toward something."
+    }
+  ]
+}

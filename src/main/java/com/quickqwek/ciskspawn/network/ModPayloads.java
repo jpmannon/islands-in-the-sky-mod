@@ -3,7 +3,6 @@ package com.quickqwek.ciskspawn.network;
 import com.quickqwek.ciskspawn.CiskSpawnMod;
 import com.quickqwek.ciskspawn.client.CutsceneClient;
 import com.quickqwek.ciskspawn.client.MortimerClient;
-import com.quickqwek.ciskspawn.item.CrewLogbookItem;
 import com.quickqwek.ciskspawn.entity.StorykeeperEntity;
 import com.quickqwek.ciskspawn.entity.GeeraEntity;
 import com.quickqwek.ciskspawn.entity.JoelleEntity;
@@ -56,10 +55,6 @@ public final class ModPayloads {
                 MortimerActionPayload.CODEC,
                 (payload, context) -> context.enqueueWork(() -> {
                     ServerPlayer player = (ServerPlayer) context.player();
-                    if (payload.entityId() == -1) {
-                        CrewLogbookItem.handleAction(player, payload.action());
-                        return;
-                    }
                     Entity entity = player.level().getEntity(payload.entityId());
                     if (entity instanceof StorykeeperEntity storykeeper && storykeeper.distanceTo(player) < 32.0F) {
                         storykeeper.handleMortimerAction(player, payload.action());

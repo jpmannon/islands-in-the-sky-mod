@@ -115,7 +115,7 @@ public class TarnEntity extends PathfinderMob implements GeoEntity {
                     body,
                     "Healing work",
                     "Ask about herself",
-                    "Trust: " + progress.trust + "/100. Quest stage: " + Math.min(progress.questStage + 1, 3) + "/3."
+                    "Medical notes are kept in the Crew Logbook."
             ));
         }
     }

@@ -169,7 +169,7 @@ public class GeeraEntity extends PathfinderMob implements GeoEntity {
             case "geera_buy_rumor" -> buyRumor(player);
             case "geera_sell_catch" -> sellCatch(player);
             case "geera_emote" -> showEmote(randomOf("🐟", "🪝", "☕", "💚", "🌧"));
-            case "geera_log" -> crewLog(player);
+            case "geera_log" -> say(player, "Logbook notes moved to the Crew Logbook. Cleaner that way.");
             case "geera_status" -> shopStatus(player);
             case "geera_station" -> stationStatus(player);
             case "geera_set_station" -> stationStatus(player);

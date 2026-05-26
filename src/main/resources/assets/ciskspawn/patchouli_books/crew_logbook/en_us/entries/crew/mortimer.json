@@ -1,0 +1,17 @@
+{
+  "name": "Mortimer",
+  "icon": "minecraft:filled_map",
+  "category": "ciskspawn:crew",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Mortimer keeps the Aeromancer's Guild from becoming only dust, rope, and old stories. He talks like a man who has survived more weather than he means to admit."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Crew Note",
+      "text": "Ask him about the guild, the Abalone, and the islands when he is ready. He notices who returns. That matters to him more than he says."
+    }
+  ]
+}

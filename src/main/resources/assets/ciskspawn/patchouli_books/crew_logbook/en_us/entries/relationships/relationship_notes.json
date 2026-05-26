@@ -1,0 +1,17 @@
+{
+  "name": "Relationship Notes",
+  "icon": "minecraft:heart_of_the_sea",
+  "category": "ciskspawn:relationships",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Trust is not a meter the people here can see, but the book can feel the pattern of it. Return visits, completed work, and honest curiosity all leave marks."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Tiers",
+      "text": "Stranger. Acquaintance. Friend. Trusted. Crew, family, or whatever word the person can bear to use. The names differ, but the shape is familiar."
+    }
+  ]
+}

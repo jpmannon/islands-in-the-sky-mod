@@ -1,0 +1,17 @@
+{
+  "name": "Aeromancer's Guild Overview",
+  "icon": "minecraft:lodestone",
+  "category": "ciskspawn:guild",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The Aeromancer's Guild was built for people who believed the sky could be crossed, charted, respected, and survived. It still smells faintly of rope, oil, and rain."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Identity",
+      "text": "This is not only a hall. It is a promise: no one crosses the islands alone if the guild can help it."
+    }
+  ]
+}

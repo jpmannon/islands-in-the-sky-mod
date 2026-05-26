@@ -1,0 +1,17 @@
+{
+  "name": "Joelle",
+  "icon": "minecraft:mushroom_stew",
+  "category": "ciskspawn:crew",
+  "sortnum": 6,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Joelle runs the restaurant like a hearth with opinions. She reads people before taking their order and somehow this is not rude when she does it."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Crew Note",
+      "text": "Food is never just food in Joelle's kitchen. Sit when told. It usually means something good is about to happen."
+    }
+  ]
+}

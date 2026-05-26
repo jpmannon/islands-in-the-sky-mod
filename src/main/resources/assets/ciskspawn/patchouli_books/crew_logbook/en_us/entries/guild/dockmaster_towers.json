@@ -1,0 +1,12 @@
+{
+  "name": "Dockmaster Towers",
+  "icon": "minecraft:bell",
+  "category": "ciskspawn:guild",
+  "sortnum": 5,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "From the towers, every approach looks possible until the wind changes. Dockmasters learn to read sails, hulls, and excuses from a distance."
+    }
+  ]
+}

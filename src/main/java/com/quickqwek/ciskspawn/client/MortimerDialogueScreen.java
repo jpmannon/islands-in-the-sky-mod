@@ -53,7 +53,6 @@ public class MortimerDialogueScreen extends Screen {
     private boolean isGeeraShop()  { return lo().contains("bait & tackle"); }
     private boolean isGeeraWorkstation()    { return lo().contains("geera workstation"); }
     private boolean isMortimerGuildStatus() { return lo().contains("mortimer guild status"); }
-    private boolean isCrewLog()    { return lo().contains("crew logbook"); }
     private String lo()            { return payload.title().toLowerCase(); }
 
     // ── Portrait textures ─────────────────────────────────────────────────────
@@ -67,7 +66,7 @@ public class MortimerDialogueScreen extends Screen {
         if (isJoelle())                       return portrait("joelle");
         if (isRamone())                       return portrait("ramone");
         if (isVelho())                        return portrait("velho");
-        return portrait("mortimer"); // default / crew log
+        return portrait("mortimer");
     }
 
     private static ResourceLocation portrait(String name) {
@@ -94,14 +93,7 @@ public class MortimerDialogueScreen extends Screen {
         int bax   = panelX + pad;                      // button area left
         int bay   = panelY + TITLE_H + TOP_H + 14;    // button area top
 
-        if (isCrewLog()) {
-            addBtn(bax,         bay,              bw,           "Crew",          "log_crew");
-            addBtn(bax + bw+8,  bay,              bw,           "Clues",         "log_clues");
-            addBtn(bax,         bay+row(1),       bw,           "Systems",       "log_systems");
-            addBtn(bax + bw+8,  bay+row(1),       bw,           "Notes",         "log_notes");
-            addBtn(bax,         bay+row(2),       panelW-pad*2, "Close logbook", "close");
-
-        } else if (isGeeraShop()) {
+        if (isGeeraShop()) {
             addBtn(bax,         bay,              bw,           payload.optionOne(),  "geera_buy_bait");
             addBtn(bax + bw+8,  bay,              bw,           payload.optionTwo(),  "geera_buy_rumor");
             addBtn(bax,         bay+row(1),       bw,           "Fishing work",       "geera_quest");
@@ -117,7 +109,7 @@ public class MortimerDialogueScreen extends Screen {
         } else if (isAzerion()) {
             addBtn(bax,         bay,              bw,           "Begin cannon drill", "azerion_drill");
             addBtn(bax + bw+8,  bay,              bw,           "Operational query",  "azerion_query");
-            addBtn(bax,         bay+row(1),       bw,           "Relationship",       "azerion_relationship");
+            addBtn(bax,         bay+row(1),       bw,           "Personal query",     "azerion_relationship");
             addBtn(bax + bw+8,  bay+row(1),       bw,           "Goodbye",            "close");
 
         } else if (isJoelle()) {
@@ -232,11 +224,6 @@ public class MortimerDialogueScreen extends Screen {
             int yOff = (int)(Math.sin(gt / 12.0) * 2.0);
             for (OptionRegion opt : options) {
                 if (opt.contains(mx, my - yOff)) {
-                    if (isCrewLog() && opt.action.startsWith("log_")) {
-                        PacketDistributor.sendToServer(new MortimerActionPayload(-1, opt.action));
-                        this.onClose();
-                        return true;
-                    }
                     if (!"close".equals(opt.action))
                         PacketDistributor.sendToServer(new MortimerActionPayload(payload.entityId(), opt.action));
                     this.onClose();
@@ -249,7 +236,6 @@ public class MortimerDialogueScreen extends Screen {
 
     // ── Drawing helpers ───────────────────────────────────────────────────────
     private String getSubtitle() {
-        if (isCrewLog())    return "✦ Persistent crew notes";
         if (isGeeraShop())  return "✦ Dockside shop";
         if (isAzerion())    return "✦ CBC artillery training interface";
         if (isVelho())      return "✦ Workshop notes";

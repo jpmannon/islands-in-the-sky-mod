@@ -1,0 +1,12 @@
+{
+  "name": "Residential Lofts",
+  "icon": "minecraft:white_bed",
+  "category": "ciskspawn:guild",
+  "sortnum": 6,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The lofts hold the ordinary proof that people live here: spare blankets, repaired mugs, half-finished notes, and the blessed smell of sleep after a long flight."
+    }
+  ]
+}
