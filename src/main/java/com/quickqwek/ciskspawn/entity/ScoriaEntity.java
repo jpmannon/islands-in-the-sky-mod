@@ -278,7 +278,7 @@ public class ScoriaEntity extends PathfinderMob implements GeoEntity {
         PlayerProgress progress = getProgress(player);
         clueStage = Math.max(clueStage, 1);
         say(player, switch (trustTier(progress)) {
-            case 0 -> "My father. Naval work, mostly. Legacy position. He's... well-respected.";
+            case 0 -> "My father. Freelance captain, airship work mostly. He's... well-respected.";
             case 1 -> "He thinks I'm a banker. I've tried to correct it and the moment always closes before I get there.";
             case 2 -> "I'm trying to build something he'd respect. I just need to do it right first. And by right I mean perfectly.";
             default -> "He's already proud of me. I know that. I just need him to know *why* to be proud.";

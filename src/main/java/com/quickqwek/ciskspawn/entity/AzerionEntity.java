@@ -140,9 +140,9 @@ public class AzerionEntity extends PathfinderMob implements GeoEntity {
 
     private String pickFirstMeeting(Player player) {
         if (nearArtillery()) {
-            return "You are standing near active maintenance equipment. Step back approximately two metres. Then we can speak. I am Azerion Rook.";
+            return "You are standing near active maintenance equipment. Step back approximately two metres. Then we can speak. Designation — Azerion Rook, Model A-Z, Mk. 9 — High Caliber Munitions Autonomous Guardian Unit.";
         }
-        return "You are new here. I do not have prior record of you. My name is Azerion Rook. I am stationed at this facility. What is your purpose here?";
+        return "You are new here. I do not have prior record of you. Designation — Azerion Rook, Model A-Z, Mk. 9 — High Caliber Munitions Autonomous Guardian Unit. I am stationed at this facility. What is your purpose here?";
     }
 
     private String pickAzerionGreeting(PlayerProgress progress, String playerName) {
