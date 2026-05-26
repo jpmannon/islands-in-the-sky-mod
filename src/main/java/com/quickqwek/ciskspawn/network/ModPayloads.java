@@ -11,6 +11,7 @@ import com.quickqwek.ciskspawn.entity.RamoneEntity;
 import com.quickqwek.ciskspawn.entity.VelhoEntity;
 import com.quickqwek.ciskspawn.entity.ScoriaEntity;
 import com.quickqwek.ciskspawn.entity.AzerionEntity;
+import com.quickqwek.ciskspawn.entity.TarnEntity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.neoforged.api.distmarker.Dist;
@@ -74,6 +75,8 @@ public final class ModPayloads {
                         ramone.handleRamoneAction(player, payload.action());
                     } else if (entity instanceof VelhoEntity velho && velho.distanceTo(player) < 32.0F) {
                         velho.handleVelhoAction(player, payload.action());
+                    } else if (entity instanceof TarnEntity tarn && tarn.distanceTo(player) < 32.0F) {
+                        tarn.handleTarnAction(player, payload.action());
                     }
                 })
         );

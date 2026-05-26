@@ -63,6 +63,13 @@ public final class ModEntities {
                             .clientTrackingRange(10)
                             .build("azerion_rook"));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<TarnEntity>> TARN =
+            ENTITY_TYPES.register("tarn",
+                    () -> EntityType.Builder.<TarnEntity>of(TarnEntity::new, MobCategory.MISC)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(10)
+                            .build("tarn"));
+
     public static void registerAttributesEvent(IEventBus modBus) {
         modBus.addListener(ModEntities::onAttributeCreation);
     }
@@ -75,6 +82,7 @@ public final class ModEntities {
         event.put(VELHO.get(), VelhoEntity.createAttributes().build());
         event.put(SCORIA.get(), ScoriaEntity.createAttributes().build());
         event.put(AZERION_ROOK.get(), AzerionEntity.createAttributes().build());
+        event.put(TARN.get(), TarnEntity.createAttributes().build());
     }
 
     private ModEntities() {}

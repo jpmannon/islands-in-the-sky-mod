@@ -3,6 +3,7 @@ package com.quickqwek.ciskspawn.server;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 
 public final class PlayerStatsTracker {
@@ -14,6 +15,19 @@ public final class PlayerStatsTracker {
             CompoundTag data = player.getPersistentData();
             int deaths = data.getInt("ciskspawn_deaths");
             data.putInt("ciskspawn_deaths", deaths + 1);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerClone(PlayerEvent.Clone event) {
+        if (!event.isWasDeath()) return;
+        Player original = event.getOriginal();
+        Player newPlayer = event.getEntity();
+        if (!original.getPersistentData().getBoolean("ciskspawn_has_soul_anchor")) return;
+
+        newPlayer.getPersistentData().merge(original.getPersistentData());
+        for (int i = 0; i < original.getInventory().getContainerSize(); i++) {
+            newPlayer.getInventory().setItem(i, original.getInventory().getItem(i).copy());
         }
     }
 
