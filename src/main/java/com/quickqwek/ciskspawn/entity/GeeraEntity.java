@@ -1,6 +1,7 @@
 package com.quickqwek.ciskspawn.entity;
 
 import com.quickqwek.ciskspawn.ai.NpcAnchorReturnGoal;
+import com.quickqwek.ciskspawn.ai.NpcShipStabilityGoal;
 import com.quickqwek.ciskspawn.ai.NpcWaypointGoal;
 
 import net.minecraft.nbt.CompoundTag;
@@ -117,12 +118,13 @@ public class GeeraEntity extends PathfinderMob implements GeoEntity {
 
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(1, new NpcAnchorReturnGoal(this, () -> this.homePos, 0.55D, 12.0F));
-        this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 0.45D));
-        this.goalSelector.addGoal(3, new LookAtPlayerGoal(this, Player.class, 8.0F));
-        this.goalSelector.addGoal(4, new RandomLookAroundGoal(this));
-        this.goalSelector.addGoal(5, new NpcWaypointGoal(this, 0.45D));
+        this.goalSelector.addGoal(0, new NpcShipStabilityGoal(this));
+        this.goalSelector.addGoal(1, new FloatGoal(this));
+        this.goalSelector.addGoal(2, new NpcAnchorReturnGoal(this, () -> this.homePos, 0.55D, 12.0F));
+        this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 0.45D));
+        this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 8.0F));
+        this.goalSelector.addGoal(5, new RandomLookAroundGoal(this));
+        this.goalSelector.addGoal(6, new NpcWaypointGoal(this, 0.45D));
     }
 
     @Override

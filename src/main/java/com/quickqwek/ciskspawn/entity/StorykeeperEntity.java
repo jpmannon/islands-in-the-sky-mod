@@ -1,6 +1,7 @@
 package com.quickqwek.ciskspawn.entity;
 
 import com.quickqwek.ciskspawn.ai.NpcAnchorReturnGoal;
+import com.quickqwek.ciskspawn.ai.NpcShipStabilityGoal;
 import com.quickqwek.ciskspawn.ai.NpcWaypointGoal;
 
 import net.minecraft.core.BlockPos;
@@ -52,6 +53,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.ClipContext;
 
 import java.util.HashMap;
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -158,12 +160,13 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
 
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(1, new NpcAnchorReturnGoal(this, () -> this.homePos, 0.55D, 12.0F));
-        this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 0.55D));
-        this.goalSelector.addGoal(3, new LookAtPlayerGoal(this, Player.class, 9.0F));
-        this.goalSelector.addGoal(4, new RandomLookAroundGoal(this));
-        this.goalSelector.addGoal(5, new NpcWaypointGoal(this, 0.45D));
+        this.goalSelector.addGoal(0, new NpcShipStabilityGoal(this));
+        this.goalSelector.addGoal(1, new FloatGoal(this));
+        this.goalSelector.addGoal(2, new NpcAnchorReturnGoal(this, () -> this.homePos, 0.55D, 12.0F));
+        this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 0.55D));
+        this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 9.0F));
+        this.goalSelector.addGoal(5, new RandomLookAroundGoal(this));
+        this.goalSelector.addGoal(6, new NpcWaypointGoal(this, 0.45D));
     }
 
     @Override
@@ -565,48 +568,47 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
 
     public void tryTravelWith(Player player) {
         Entity playerVehicle = player.getVehicle();
-        // First prefer the block the player is actually looking at. This makes testing reliable
-        // and also gives us a clean path toward Mortimer-specific chair/compass behavior later.
-        BlockPos lookedSeatBlock = findLookedAtSeatBlock(player);
-        Entity seat = findNearbyOpenSeat(player, playerVehicle);
-        ContraptionSeatTarget contraptionSeat = findNearbyContraptionSeat(player, playerVehicle);
-        BlockPos seatBlock = lookedSeatBlock != null ? lookedSeatBlock : findNearbySeatBlock(player);
-
-        if (seat != null) {
-            this.targetSeatId = seat.getId();
-            this.requestedBoardingPlayer = player.getUUID();
-            this.getNavigation().moveTo(seat.getX(), seat.getY(), seat.getZ(), 0.85D);
-            say("Mortimer - Aeromancer", "A proper seat. Good. Give an old aeromancer a moment to walk over before you launch us into the void.", player);
-            player.sendSystemMessage(Component.literal("§aMortimer found an open seat entity and is walking to it."));
-            return;
-        }
-
-        if (contraptionSeat != null) {
-            this.targetContraptionSeatEntityId = contraptionSeat.entity.getId();
-            this.targetContraptionSeatIndex = contraptionSeat.seatIndex;
-            this.requestedBoardingPlayer = player.getUUID();
-            this.getNavigation().moveTo(contraptionSeat.entity.getX(), contraptionSeat.entity.getY(), contraptionSeat.entity.getZ(), 0.9D);
-            say("Mortimer - Aeromancer", "I found a moving contraption with an open seat. If this works, remind me to pretend it was obvious.", player);
-            player.sendSystemMessage(Component.literal("§aMortimer found a Create-style contraption seat. Testing direct contraption passenger mounting."));
-            return;
-        }
-
-        if (seatBlock != null) {
-            this.targetSeatBlockPos = seatBlock.immutable();
-            this.requestedBoardingPlayer = player.getUUID();
-            this.getNavigation().moveTo(seatBlock.getX() + 0.5D, seatBlock.getY() + 1.0D, seatBlock.getZ() + 0.5D, 0.85D);
-            say("Mortimer - Aeromancer", "I found the chair itself, not its riding point. I'll walk over and test the sitting pose. Proper mounting may need the chair mod's own seat entity.", player);
-            player.sendSystemMessage(Component.literal("§aMortimer found a nearby/looked-at seat or chair block and is walking to it. This is visual sitting unless the block exposes a rideable seat."));
-            return;
-        }
 
         if (playerVehicle != null) {
-            say("Mortimer - Aeromancer", "I can see your seat, but not an empty one nearby. I'm not sitting in your lap, " + player.getName().getString() + ". Geera would hear about it.", player);
-            player.sendSystemMessage(Component.literal("§eNo empty seat entity found near you. If this is on a moving Create Aeronautics ship, the seat may live inside a contraption/sublevel and needs special handling."));
-        } else {
-            askToFollow(player);
-            player.sendSystemMessage(Component.literal("§7No seat found yet. Try looking directly at the chair/seat and pressing G again, or press H to scan nearby seat IDs."));
+            ContraptionSeatTarget seat = findNearbyContraptionSeat(player, playerVehicle);
+            if (seat != null) {
+                this.targetContraptionSeatEntityId = seat.entity.getId();
+                this.targetContraptionSeatIndex = seat.seatIndex;
+                this.requestedBoardingPlayer = player.getUUID();
+                this.getNavigation().moveTo(seat.entity.getX(), seat.entity.getY(), seat.entity.getZ(), 0.9D);
+                say("Mortimer - Aeromancer", "I see the train. Give me a moment.", player);
+                return;
+            }
         }
+
+        BlockPos lookedSeat = findLookedAtSeatBlock(player);
+        if (lookedSeat != null) {
+            this.targetSeatBlockPos = lookedSeat.immutable();
+            this.seatedYaw = player.getYRot();
+            this.requestedBoardingPlayer = player.getUUID();
+            this.getNavigation().moveTo(lookedSeat.getX() + 0.5D, lookedSeat.getY() + 1.0D, lookedSeat.getZ() + 0.5D, 0.85D);
+            say("Mortimer - Aeromancer", "I see the seat. Walking over.", player);
+            return;
+        }
+
+        NpcShipStabilityGoal.initReflection();
+        boolean playerOnShip = false;
+        if (NpcShipStabilityGoal.sableHelper != null && NpcShipStabilityGoal.getTrackingSubLevel != null) {
+            try {
+                playerOnShip = NpcShipStabilityGoal.getTrackingSubLevel.invoke(
+                        NpcShipStabilityGoal.sableHelper, player) != null;
+            } catch (Exception ignored) {
+            }
+        }
+        if (playerOnShip) {
+            this.followingPlayer = player.getUUID();
+            this.followTicksLeft = 20 * 30;
+            this.getNavigation().moveTo(player.getX(), player.getY(), player.getZ(), 0.9D);
+            say("Mortimer - Aeromancer", "I'll find my footing. Don't launch us until I'm aboard.", player);
+            return;
+        }
+
+        say("Mortimer - Aeromancer", "Look directly at a seat and try again, or board first if this is an airship.", player);
     }
 
     private Entity findNearbyOpenSeat(Player player, Entity excludedVehicle) {
@@ -721,14 +723,21 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
     }
 
     private boolean mountContraptionSeat(Entity contraptionEntity, int seatIndex) {
-        try {
-            java.lang.reflect.Method addSittingPassenger = findMethod(contraptionEntity.getClass(), "addSittingPassenger", Entity.class, int.class);
-            if (addSittingPassenger == null) return false;
-            addSittingPassenger.invoke(contraptionEntity, this, seatIndex);
-            return this.isPassenger();
-        } catch (Exception ignored) {
-            return false;
+        String[] methodNames = {"addSittingPassenger", "addPassengerWithSeat", "setSeat"};
+        for (String name : methodNames) {
+            try {
+                Method method = findMethod(contraptionEntity.getClass(), name, Entity.class, int.class);
+                if (method == null) continue;
+                method.invoke(contraptionEntity, this, seatIndex);
+                if (this.isPassenger()) return true;
+            } catch (Exception ignored) {
+            }
         }
+        try {
+            return this.startRiding(contraptionEntity, true);
+        } catch (Exception ignored) {
+        }
+        return false;
     }
 
 
@@ -756,8 +765,6 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
         BlockPos closest = null;
         double closestDist = Double.MAX_VALUE;
 
-        // Scan both around the player and around Mortimer. On moving ships / Sable sublevels
-        // the player and NPC can appear visually nearby while their technical coordinates differ.
         BlockPos[] centers = new BlockPos[] { player.blockPosition(), this.blockPosition() };
         for (BlockPos center : centers) {
             for (BlockPos pos : BlockPos.betweenClosed(center.offset(-14, -6, -14), center.offset(14, 8, 14))) {
@@ -774,10 +781,6 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
                 }
             }
         }
-
-        if (closest == null) {
-            closest = findSableSeatBlockNearPlayer(player);
-        }
         return closest;
     }
 
@@ -785,80 +788,21 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
         return id.contains("seat") || id.contains("chair") || id.contains("stool") || id.contains("bench");
     }
 
-    /**
-     * Experimental Sable support. Sable ships can live in plot/sublevel coordinates rather than
-     * the normal visual overworld coordinate space. This method scans loaded Sable sublevel chunks
-     * for seat-like blocks. It intentionally uses reflection so the mod still runs without Sable.
-     */
-    private BlockPos findSableSeatBlockNearPlayer(Player player) {
-        if (!(this.level() instanceof ServerLevel)) return null;
-        try {
-            Class<?> containerClass = Class.forName("dev.ryanhcode.sable.api.sublevel.SubLevelContainer");
-            java.lang.reflect.Method getContainer = containerClass.getMethod("getContainer", Level.class);
-            Object container = getContainer.invoke(null, this.level());
-            if (container == null) return null;
-            java.lang.reflect.Method getAllSubLevels = findMethod(container.getClass(), "getAllSubLevels");
-            if (getAllSubLevels == null) return null;
-            Object levelsObj = getAllSubLevels.invoke(container);
-            if (!(levelsObj instanceof Iterable<?> levels)) return null;
-
-            BlockPos best = null;
-            double bestScore = Double.MAX_VALUE;
-            int scanned = 0;
-            for (Object subLevel : levels) {
-                if (subLevel == null) continue;
-                java.lang.reflect.Method getPlot = findMethod(subLevel.getClass(), "getPlot");
-                if (getPlot == null) continue;
-                Object plot = getPlot.invoke(subLevel);
-                if (plot == null) continue;
-                java.lang.reflect.Method getLoadedChunks = findMethod(plot.getClass(), "getLoadedChunks");
-                if (getLoadedChunks == null) continue;
-                Object chunksObj = getLoadedChunks.invoke(plot);
-                if (!(chunksObj instanceof Iterable<?> chunks)) continue;
-                for (Object holder : chunks) {
-                    if (holder == null) continue;
-                    java.lang.reflect.Method getChunk = findMethod(holder.getClass(), "getChunk");
-                    if (getChunk == null) continue;
-                    Object chunkObj = getChunk.invoke(holder);
-                    if (!(chunkObj instanceof net.minecraft.world.level.chunk.LevelChunk chunk)) continue;
-                    net.minecraft.world.level.ChunkPos cp = chunk.getPos();
-                    int minY = Math.max(this.level().getMinBuildHeight(), player.blockPosition().getY() - 10);
-                    int maxY = Math.min(this.level().getMaxBuildHeight() - 1, player.blockPosition().getY() + 10);
-                    for (int x = cp.getMinBlockX(); x <= cp.getMaxBlockX(); x++) {
-                        for (int z = cp.getMinBlockZ(); z <= cp.getMaxBlockZ(); z++) {
-                            for (int y = minY; y <= maxY; y++) {
-                                if (++scanned > 25000) break;
-                                BlockPos pos = new BlockPos(x, y, z);
-                                BlockState state = this.level().getBlockState(pos);
-                                ResourceLocation key = BuiltInRegistries.BLOCK.getKey(state.getBlock());
-                                if (key == null || !isSeatLikeBlockId(key.toString().toLowerCase())) continue;
-                                double score = distanceToBlockCenterSqr(pos, player);
-                                if (score < bestScore) {
-                                    bestScore = score;
-                                    best = pos.immutable();
-                                }
-                            }
-                            if (scanned > 25000) break;
-                        }
-                        if (scanned > 25000) break;
-                    }
-                }
-            }
-            return best;
-        } catch (Throwable ignored) {
-            return null;
-        }
-    }
-
-
     private boolean tryCreateSeatSitDown(BlockPos pos) {
         try {
             ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(this.level().getBlockState(pos).getBlock());
-            if (blockId == null || !"create".equals(blockId.getNamespace()) || !blockId.getPath().contains("seat")) {
-                return false;
-            }
+            if (blockId == null || !"create".equals(blockId.getNamespace())) return false;
             Class<?> seatBlockClass = Class.forName("com.simibubi.create.content.contraptions.actors.seat.SeatBlock");
-            java.lang.reflect.Method sitDown = seatBlockClass.getMethod("sitDown", Level.class, BlockPos.class, Entity.class);
+            Method sitDown;
+            try {
+                sitDown = seatBlockClass.getMethod("sitDown",
+                        net.minecraft.world.level.Level.class, BlockPos.class,
+                        net.minecraft.world.entity.LivingEntity.class);
+            } catch (NoSuchMethodException exception) {
+                sitDown = seatBlockClass.getMethod("sitDown",
+                        net.minecraft.world.level.Level.class, BlockPos.class,
+                        net.minecraft.world.entity.Entity.class);
+            }
             sitDown.invoke(null, this.level(), pos, this);
             boolean mounted = this.isPassenger();
             if (mounted) {
@@ -983,79 +927,11 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
             }
         }
 
-        int sableSeats = debugSableSublevels(player);
-
-        if (count == 0 && blockCount == 0 && sableSeats == 0) {
-            player.sendSystemMessage(Component.literal("§eNo obvious seat/ship entities or blocks found nearby. If you are on a moving Create Aeronautics ship, its seats may be hidden inside a Sable sublevel."));
+        if (count == 0 && blockCount == 0) {
+            player.sendSystemMessage(Component.literal("§eNo obvious seat/ship entities or blocks found nearby. For Sable airships, board first and ask Mortimer to follow aboard."));
         } else {
-            player.sendSystemMessage(Component.literal("§7Found " + count + " relevant entities, " + blockCount + " relevant blocks, and " + sableSeats + " Sable-sublevel seat-like blocks. Send this output if ship seats still fail."));
+            player.sendSystemMessage(Component.literal("§7Found " + count + " relevant entities and " + blockCount + " relevant blocks."));
         }
-    }
-
-    private int debugSableSublevels(Player player) {
-        int seats = 0;
-        try {
-            Class<?> containerClass = Class.forName("dev.ryanhcode.sable.api.sublevel.SubLevelContainer");
-            java.lang.reflect.Method getContainer = containerClass.getMethod("getContainer", Level.class);
-            Object container = getContainer.invoke(null, this.level());
-            if (container == null) return 0;
-            java.lang.reflect.Method getAllSubLevels = findMethod(container.getClass(), "getAllSubLevels");
-            if (getAllSubLevels == null) return 0;
-            Object levelsObj = getAllSubLevels.invoke(container);
-            if (!(levelsObj instanceof Iterable<?> levels)) return 0;
-            int subCount = 0;
-            for (Object subLevel : levels) {
-                subCount++;
-                java.lang.reflect.Method getName = findMethod(subLevel.getClass(), "getName");
-                String name = "unnamed";
-                try {
-                    Object nameObj = getName == null ? null : getName.invoke(subLevel);
-                    if (nameObj != null) name = nameObj.toString();
-                } catch (Throwable ignored) {}
-                java.lang.reflect.Method getPlot = findMethod(subLevel.getClass(), "getPlot");
-                if (getPlot == null) continue;
-                Object plot = getPlot.invoke(subLevel);
-                if (plot == null) continue;
-                java.lang.reflect.Method getLoadedChunks = findMethod(plot.getClass(), "getLoadedChunks");
-                if (getLoadedChunks == null) continue;
-                Object chunksObj = getLoadedChunks.invoke(plot);
-                if (!(chunksObj instanceof Iterable<?> chunks)) continue;
-                int localSeats = 0;
-                int scanned = 0;
-                for (Object holder : chunks) {
-                    java.lang.reflect.Method getChunk = findMethod(holder.getClass(), "getChunk");
-                    if (getChunk == null) continue;
-                    Object chunkObj = getChunk.invoke(holder);
-                    if (!(chunkObj instanceof net.minecraft.world.level.chunk.LevelChunk chunk)) continue;
-                    net.minecraft.world.level.ChunkPos cp = chunk.getPos();
-                    int minY = Math.max(this.level().getMinBuildHeight(), player.blockPosition().getY() - 10);
-                    int maxY = Math.min(this.level().getMaxBuildHeight() - 1, player.blockPosition().getY() + 10);
-                    for (int x = cp.getMinBlockX(); x <= cp.getMaxBlockX(); x++) {
-                        for (int z = cp.getMinBlockZ(); z <= cp.getMaxBlockZ(); z++) {
-                            for (int y = minY; y <= maxY; y++) {
-                                if (++scanned > 12000) break;
-                                BlockPos pos = new BlockPos(x, y, z);
-                                ResourceLocation key = BuiltInRegistries.BLOCK.getKey(this.level().getBlockState(pos).getBlock());
-                                if (key != null && isSeatLikeBlockId(key.toString().toLowerCase())) {
-                                    localSeats++;
-                                    if (localSeats <= 4) player.sendSystemMessage(Component.literal("§8Sable seat-like block §b" + key + "§8 at " + pos.toShortString() + " in " + name));
-                                }
-                            }
-                            if (scanned > 12000) break;
-                        }
-                        if (scanned > 12000) break;
-                    }
-                }
-                if (localSeats > 0) {
-                    seats += localSeats;
-                    player.sendSystemMessage(Component.literal("§8Sable sublevel §b" + name + "§8 contained " + localSeats + " seat-like blocks in scan range."));
-                }
-            }
-            if (subCount > 0) player.sendSystemMessage(Component.literal("§8Sable debug: scanned " + subCount + " loaded sublevels."));
-        } catch (Throwable t) {
-            player.sendSystemMessage(Component.literal("§8Sable debug unavailable: " + t.getClass().getSimpleName()));
-        }
-        return seats;
     }
 
     private void tickBoardingTarget() {
