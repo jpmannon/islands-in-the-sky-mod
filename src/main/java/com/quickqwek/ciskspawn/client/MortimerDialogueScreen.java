@@ -93,8 +93,9 @@ public class MortimerDialogueScreen extends Screen {
             options.add(new OptionRegion(panelX + 28 + buttonW, buttonY + 27, buttonW, buttonH, "Goodbye", "close"));
         } else if (isAzerion()) {
             options.add(new OptionRegion(panelX + 14, buttonY, buttonW, buttonH, "Begin cannon drill", "azerion_drill"));
-            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY, buttonW, buttonH, "CBC safety", "azerion_drill"));
-            options.add(new OptionRegion(panelX + 14, buttonY + 27, panelW - 28, buttonH, "Goodbye", "close"));
+            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY, buttonW, buttonH, "Operational query", "azerion_query"));
+            options.add(new OptionRegion(panelX + 14, buttonY + 27, buttonW, buttonH, "Relationship", "azerion_relationship"));
+            options.add(new OptionRegion(panelX + 28 + buttonW, buttonY + 27, buttonW, buttonH, "Goodbye", "close"));
         } else if (isScoria()) {
             options.add(new OptionRegion(panelX + 14, buttonY, buttonW, buttonH, "Engineering lesson", "scoria_lesson"));
             options.add(new OptionRegion(panelX + 28 + buttonW, buttonY, buttonW, buttonH, "About Mortimer", "scoria_mortimer"));
