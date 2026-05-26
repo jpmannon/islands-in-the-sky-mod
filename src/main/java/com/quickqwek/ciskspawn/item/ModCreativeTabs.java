@@ -19,6 +19,7 @@ public final class ModCreativeTabs {
                     .displayItems((parameters, output) -> {
                         output.accept(ModItems.CREW_LOGBOOK.get());
                         output.accept(ModItems.GUILDED_COMPASS.get());
+                        output.accept(ModItems.NPC_ANCHOR_ITEM.get());
                     })
                     .build());
 

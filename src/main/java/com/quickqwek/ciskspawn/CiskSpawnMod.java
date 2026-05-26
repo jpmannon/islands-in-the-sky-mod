@@ -1,5 +1,7 @@
 package com.quickqwek.ciskspawn;
 
+import com.quickqwek.ciskspawn.block.ModBlockEntities;
+import com.quickqwek.ciskspawn.block.ModBlocks;
 import com.quickqwek.ciskspawn.entity.ModEntities;
 import com.quickqwek.ciskspawn.item.ModItems;
 import com.quickqwek.ciskspawn.item.ModCreativeTabs;
@@ -18,6 +20,8 @@ public class CiskSpawnMod {
     public static final Logger LOG = LoggerFactory.getLogger(MODID);
 
     public CiskSpawnMod(IEventBus modBus) {
+        ModBlocks.BLOCKS.register(modBus);
+        ModBlockEntities.BLOCK_ENTITY_TYPES.register(modBus);
         ModEntities.ENTITY_TYPES.register(modBus);
         ModItems.ITEMS.register(modBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modBus);
