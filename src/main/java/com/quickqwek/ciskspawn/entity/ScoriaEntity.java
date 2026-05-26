@@ -2,6 +2,8 @@ package com.quickqwek.ciskspawn.entity;
 
 import com.quickqwek.ciskspawn.network.MortimerDialoguePayload;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -31,6 +33,10 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 import net.neoforged.neoforge.network.PacketDistributor;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 /**
  * Scoria implementation.
  * Uses the exported Scoria Blockbench/GeckoLib assets.
@@ -41,6 +47,7 @@ public class ScoriaEntity extends PathfinderMob implements GeoEntity {
     private static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("walk");
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
+    private final Map<UUID, PlayerProgress> progressByPlayer = new HashMap<>();
     private int speechTicksLeft = 0;
     private int clueStage = 0;
     private int techLessonsGiven = 0;
@@ -86,11 +93,33 @@ public class ScoriaEntity extends PathfinderMob implements GeoEntity {
     }
 
     public void openDialogue(Player player) {
-        String body = "Scoria keeps his coat too clean for a dockhand and too practical for a banker. "
+        PlayerProgress progress = getProgress(player);
+        if (!progress.hasMet) {
+            progress.hasMet = true;
+            String firstMeet = pickFirstMeeting(player);
+            say(player, firstMeet);
+            if (player instanceof ServerPlayer serverPlayer) {
+                PacketDistributor.sendToPlayer(serverPlayer, new MortimerDialoguePayload(
+                        this.getId(),
+                        "Scoria - Apprentice",
+                        firstMeet,
+                        "Engineering lesson",
+                        "About Mortimer",
+                        "First time meeting Scoria."
+                ));
+            }
+            return;
+        }
+
+        String greeting = pickScoriaGreeting(progress, player.getName().getString());
+        String body = greeting + "\n\n"
+                + "Scoria keeps his coat too clean for a dockhand and too practical for a banker. "
                 + "He is trying very hard not to look proud of the pressure-valve diagrams tucked under his arm.\n\n"
                 + "Secret status: apprentice aero-engineer. Mortimer still thinks 'banker clothes' explain everything.\n\n"
+                + "Trust: " + progress.trust + "/100. Personal quest stage: " + progress.questStage + "/3.\n"
                 + "Reveal progress: " + revealProgress + "/4. Tech lessons given: " + techLessonsGiven + ".\n"
                 + "Project stage: " + projectStage + "/4. Project sessions: " + projectSessions + ".";
+        say(player, greeting);
         if (player instanceof ServerPlayer serverPlayer) {
             PacketDistributor.sendToPlayer(serverPlayer, new MortimerDialoguePayload(
                     this.getId(),
@@ -107,6 +136,7 @@ public class ScoriaEntity extends PathfinderMob implements GeoEntity {
         switch (action) {
             case "scoria_lesson" -> engineeringLesson(player);
             case "scoria_mortimer" -> aboutMortimer(player);
+            case "scoria_clue" -> clueHint(player);
             case "scoria_reveal" -> revealStep(player);
             case "scoria_log" -> logPage(player);
             case "scoria_emote" -> showEmote("⚙");
@@ -115,6 +145,41 @@ public class ScoriaEntity extends PathfinderMob implements GeoEntity {
             case "scoria_advance_project" -> advanceProject(player);
             default -> openDialogue(player);
         }
+    }
+
+    private String pickFirstMeeting(Player player) {
+        if (nearCraftingBlock()) {
+            return "This isn't — I was just looking at something. Structural curiosity. Entirely unrelated. Scoria. What can I do for you?";
+        }
+        return "Oh — sorry, I didn't hear you. Scoria. I'm here visiting family. I have some... investments. Financial interests. What did you need?";
+    }
+
+    private String pickScoriaGreeting(PlayerProgress progress, String playerName) {
+        if (progress.trust >= 55) {
+            return randomOf(
+                    "You know what I'm doing, don't you. I can tell you know.",
+                    "The design is almost ready. I just need to test one component."
+            );
+        }
+
+        if (progress.trust >= 35) {
+            return randomOf(
+                    "There you are. I had a — I need to show you something, actually. When you have a moment.",
+                    "I've been working on something. I'd like a second opinion. Not from Mortimer."
+            );
+        }
+
+        if (progress.trust >= 15) {
+            return randomOf(
+                    "Oh, " + playerName + ". Good. I was going to ask you something. Not financial.",
+                    "Back again. Good. The guild can be a lot to take in the first time."
+            );
+        }
+
+        return randomOf(
+                "Scoria. Financial work, mostly. Not very interesting, I'm afraid. What can I do for you?",
+                "Just passing through. Visiting family. The usual."
+        );
     }
 
     private void setProjectHere(Player player) {
@@ -182,20 +247,55 @@ public class ScoriaEntity extends PathfinderMob implements GeoEntity {
     }
 
     private void engineeringLesson(Player player) {
+        PlayerProgress progress = getProgress(player);
         techLessonsGiven++;
         clueStage = Math.max(clueStage, 2);
-        String[] lines = new String[] {
-                "A stabilizer is not a luxury. It's a promise the ship makes to everyone aboard.",
-                "Thrusters are easy to add and hard to respect. That's where most pilots get loud and wrong.",
-                "Levitite hums before it drifts. If you hear the pitch climb, check your load before your pride.",
-                "Redstone cutoffs aren't cowardice. They're how machines apologize before anyone gets hurt."
-        };
-        say(player, lines[this.random.nextInt(lines.length)]);
+        switch (progress.questStage) {
+            case 0 -> {
+                addTrust(progress, 3);
+                say(player, "Engineering theory? I know a little. Purely academically. Levitite, for example — fascinating stabilization problem.");
+            }
+            case 1 -> {
+                addTrust(progress, 5);
+                revealProgress = Math.max(revealProgress, 1);
+                say(player, "Alright. Between us — the banker thing is a simplification. I've been working on something. Levitite thruster stabilizers at altitude. It's a real problem.");
+            }
+            case 2 -> {
+                addTrust(progress, 5);
+                revealProgress = Math.max(revealProgress, 2);
+                say(player, "Come back when the sun's lower. I'll show you the actual design. Don't tell my father.");
+            }
+            default -> {
+                addTrust(progress, 10);
+                revealProgress = Math.max(revealProgress, 4);
+                say(player, "The test went well. You can tell him now. If the moment comes. I think I'm ready.");
+            }
+        }
+        updateQuestStageFromTrust(progress);
     }
 
     private void aboutMortimer(Player player) {
+        PlayerProgress progress = getProgress(player);
         clueStage = Math.max(clueStage, 1);
-        say(player, "Dad saw the coat and panicked. I was going to tell him after the interview. Then Mum laughed and... well. Here we are.");
+        say(player, switch (trustTier(progress)) {
+            case 0 -> "My father. Naval work, mostly. Legacy position. He's... well-respected.";
+            case 1 -> "He thinks I'm a banker. I've tried to correct it and the moment always closes before I get there.";
+            case 2 -> "I'm trying to build something he'd respect. I just need to do it right first. And by right I mean perfectly.";
+            default -> "He's already proud of me. I know that. I just need him to know *why* to be proud.";
+        });
+    }
+
+    private void clueHint(Player player) {
+        PlayerProgress progress = getProgress(player);
+        clueStage = Math.max(clueStage, 2);
+        addTrust(progress, 1);
+        updateQuestStageFromTrust(progress);
+        say(player, randomOf(
+                "Levitite drift gets worse when the hull is asymmetric. That's not a banker observation.",
+                "I keep sketching stabilizer fins in ledger margins. So far no one has noticed. Except Mum, obviously.",
+                "I'll tell him when I have something worth showing.",
+                "The design has to hold at altitude. If it fails on the bench, fine. If it fails in front of Dad, no."
+        ));
     }
 
     private void revealStep(Player player) {
@@ -256,9 +356,29 @@ public class ScoriaEntity extends PathfinderMob implements GeoEntity {
         if (ambientCooldown > 0) ambientCooldown--;
         else {
             Player nearby = this.level().getNearestPlayer(this, 8.0D);
-            if (nearby != null) sayNearby(randomOf("These are not banker clothes. They're interview clothes. Different tragedy.", "Dad would love this valve if he stopped glaring at my collar.", "Levitite drift is basically sky math with better posture.", "Mum thinks this is hilarious. Mum is correct."));
+            if (nearby != null) sayNearby(pickAmbientLine(nearby));
             ambientCooldown = 20 * 154 + this.random.nextInt(20 * 242);
         }
+    }
+
+    private String pickAmbientLine(Player player) {
+        PlayerProgress progress = getProgress(player);
+        if (progress.trust >= 35) {
+            return randomOf(
+                    "Father used to say the sky rewards adaptation. I've been adapting.",
+                    "Levitite needs a stabilizer at high altitude. Solved problem. Someone just hasn't written it down yet."
+            );
+        }
+
+        if (progress.trust >= 15) {
+            return "Levitite needs a stabilizer at high altitude. Solved problem. Someone just hasn't written it down yet.";
+        }
+
+        return randomOf(
+                "The tolerances on high-altitude propulsion are — sorry. Never mind.",
+                "The banker thing is fine. Entirely fine.",
+                "Not here for engineering reasons. Obviously."
+        );
     }
 
     private void tickProjectRoutine() {
@@ -304,6 +424,44 @@ public class ScoriaEntity extends PathfinderMob implements GeoEntity {
 
     private String randomOf(String... values) { return values[this.random.nextInt(values.length)]; }
 
+    private PlayerProgress getProgress(Player player) {
+        return progressByPlayer.computeIfAbsent(player.getUUID(), uuid -> new PlayerProgress());
+    }
+
+    private void addTrust(PlayerProgress progress, int amount) {
+        progress.trust = Math.min(100, progress.trust + amount);
+    }
+
+    private void updateQuestStageFromTrust(PlayerProgress progress) {
+        if (progress.trust >= 55) {
+            progress.questStage = Math.max(progress.questStage, 3);
+        } else if (progress.trust >= 35) {
+            progress.questStage = Math.max(progress.questStage, 2);
+        } else if (progress.trust >= 15) {
+            progress.questStage = Math.max(progress.questStage, 1);
+        }
+    }
+
+    private int trustTier(PlayerProgress progress) {
+        if (progress.trust >= 55) return 3;
+        if (progress.trust >= 35) return 2;
+        if (progress.trust >= 15) return 1;
+        return 0;
+    }
+
+    private boolean nearCraftingBlock() {
+        BlockPos center = this.blockPosition();
+        for (BlockPos pos : BlockPos.betweenClosed(center.offset(-5, -5, -5), center.offset(5, 5, 5))) {
+            BlockState state = this.level().getBlockState(pos);
+            ResourceLocation key = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+            String id = key == null ? "" : key.toString();
+            if (id.contains("anvil") || id.contains("bench") || id.contains("table") || id.contains("depot")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private int countItem(Player player, String itemId) {
         int count = 0;
         for (ItemStack stack : player.getInventory().items) if (stackMatchesId(stack, itemId)) count += stack.getCount();
@@ -333,6 +491,16 @@ public class ScoriaEntity extends PathfinderMob implements GeoEntity {
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
+        ListTag list = new ListTag();
+        for (Map.Entry<UUID, PlayerProgress> entry : progressByPlayer.entrySet()) {
+            CompoundTag playerTag = new CompoundTag();
+            playerTag.putUUID("Player", entry.getKey());
+            playerTag.putInt("Trust", entry.getValue().trust);
+            playerTag.putBoolean("HasMet", entry.getValue().hasMet);
+            playerTag.putInt("QuestStage", entry.getValue().questStage);
+            list.add(playerTag);
+        }
+        tag.put("ScoriaProgress", list);
         tag.putInt("ScoriaClueStage", clueStage);
         tag.putInt("ScoriaTechLessons", techLessonsGiven);
         tag.putInt("ScoriaRevealProgress", revealProgress);
@@ -344,6 +512,18 @@ public class ScoriaEntity extends PathfinderMob implements GeoEntity {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        progressByPlayer.clear();
+        if (tag.contains("ScoriaProgress", Tag.TAG_LIST)) {
+            ListTag list = tag.getList("ScoriaProgress", Tag.TAG_COMPOUND);
+            for (int i = 0; i < list.size(); i++) {
+                CompoundTag playerTag = list.getCompound(i);
+                PlayerProgress progress = new PlayerProgress();
+                progress.trust = playerTag.getInt("Trust");
+                if (playerTag.contains("HasMet")) progress.hasMet = playerTag.getBoolean("HasMet");
+                progress.questStage = playerTag.getInt("QuestStage");
+                progressByPlayer.put(playerTag.getUUID("Player"), progress);
+            }
+        }
         if (tag.contains("ScoriaClueStage")) clueStage = tag.getInt("ScoriaClueStage");
         if (tag.contains("ScoriaTechLessons")) techLessonsGiven = tag.getInt("ScoriaTechLessons");
         if (tag.contains("ScoriaRevealProgress")) revealProgress = tag.getInt("ScoriaRevealProgress");
@@ -376,4 +556,10 @@ public class ScoriaEntity extends PathfinderMob implements GeoEntity {
 
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() { return cache; }
+
+    private static class PlayerProgress {
+        int trust = 0;
+        boolean hasMet = false;
+        int questStage = 0;
+    }
 }
