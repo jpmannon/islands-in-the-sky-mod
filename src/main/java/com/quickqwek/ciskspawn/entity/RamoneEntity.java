@@ -49,6 +49,9 @@ public class RamoneEntity extends PathfinderMob implements GeoEntity {
     private int speechTicksLeft = 0;
     private int ambientCooldown = 20 * 154;
     private BlockPos homePos = null;
+    private UUID lastDialoguePlayer = null;
+    private long lastDialogueTick = Long.MIN_VALUE;
+    private String lastDialogueBody = "";
 
     public RamoneEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
@@ -323,10 +326,41 @@ public class RamoneEntity extends PathfinderMob implements GeoEntity {
     }
 
     private void say(Player player, String text) {
+        sayTagOnly(text);
+        sendDialogue(player, text);
+    }
+
+    private void sayTagOnly(String text) {
         this.setCustomName(Component.literal("§2Ramone§f: " + text));
         this.setCustomNameVisible(true);
         this.speechTicksLeft = 20 * 7;
-        player.displayClientMessage(Component.literal("§2Ramone§7: " + text), false);
+    }
+
+    private void sendDialogue(Player player, String body) {
+        body = appendDialogueBody(player, body);
+        if (player instanceof ServerPlayer serverPlayer) {
+            PacketDistributor.sendToPlayer(serverPlayer, new MortimerDialoguePayload(
+                    this.getId(),
+                    "Ramone - Gardener",
+                    body,
+                    "Garden work",
+                    "Garden tip",
+                    "Ramone gives the answer room to breathe."
+            ));
+        }
+    }
+
+    private String appendDialogueBody(Player player, String line) {
+        UUID playerId = player.getUUID();
+        long tick = this.level().getGameTime();
+        if (playerId.equals(lastDialoguePlayer) && tick == lastDialogueTick) {
+            lastDialogueBody = lastDialogueBody + "\n\n" + line;
+        } else {
+            lastDialogueBody = line;
+        }
+        lastDialoguePlayer = playerId;
+        lastDialogueTick = tick;
+        return lastDialogueBody;
     }
 
     private void sayNearby(String text) {

@@ -49,6 +49,9 @@ public class VelhoEntity extends PathfinderMob implements GeoEntity {
     private int speechTicksLeft = 0;
     private int ambientCooldown = 20 * 154;
     private BlockPos homePos = null;
+    private UUID lastDialoguePlayer = null;
+    private long lastDialogueTick = Long.MIN_VALUE;
+    private String lastDialogueBody = "";
 
     public VelhoEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
@@ -284,7 +287,7 @@ public class VelhoEntity extends PathfinderMob implements GeoEntity {
         this.setCustomNameVisible(true);
         this.speechTicksLeft = 20 * 7;
         Component chat = Component.literal("§5Velho§7 to Azerion: " + text);
-        player.displayClientMessage(chat, false);
+        sendDialogue(player, "Velho to Azerion: " + text);
         for (Player nearby : this.level().players()) {
             if (nearby != player && nearby.distanceTo(this) <= 12.0F) nearby.sendSystemMessage(chat);
         }
@@ -327,10 +330,41 @@ public class VelhoEntity extends PathfinderMob implements GeoEntity {
     }
 
     private void say(Player player, String text) {
+        sayTagOnly(text);
+        sendDialogue(player, text);
+    }
+
+    private void sayTagOnly(String text) {
         this.setCustomName(Component.literal("§5Velho§f: " + text));
         this.setCustomNameVisible(true);
         this.speechTicksLeft = 20 * 7;
-        player.displayClientMessage(Component.literal("§5Velho§7: " + text), false);
+    }
+
+    private void sendDialogue(Player player, String body) {
+        body = appendDialogueBody(player, body);
+        if (player instanceof ServerPlayer serverPlayer) {
+            PacketDistributor.sendToPlayer(serverPlayer, new MortimerDialoguePayload(
+                    this.getId(),
+                    "Velho - Enchanter",
+                    body,
+                    "Enchanting work",
+                    "Enchanting tip",
+                    "Velho has already half-moved on."
+            ));
+        }
+    }
+
+    private String appendDialogueBody(Player player, String line) {
+        UUID playerId = player.getUUID();
+        long tick = this.level().getGameTime();
+        if (playerId.equals(lastDialoguePlayer) && tick == lastDialogueTick) {
+            lastDialogueBody = lastDialogueBody + "\n\n" + line;
+        } else {
+            lastDialogueBody = line;
+        }
+        lastDialoguePlayer = playerId;
+        lastDialogueTick = tick;
+        return lastDialogueBody;
     }
 
     private void sayNearby(String text) {

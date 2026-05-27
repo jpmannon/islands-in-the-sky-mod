@@ -27,6 +27,9 @@ public class NpcAnchorReturnGoal extends Goal {
 
     @Override
     public boolean canUse() {
+        if (this.mob instanceof NpcFollowable followable && followable.isFollowingPlayer()) {
+            return false;
+        }
         BlockPos homePos = this.homePosSupplier.get();
         if (homePos == null) {
             return false;
@@ -40,6 +43,9 @@ public class NpcAnchorReturnGoal extends Goal {
 
     @Override
     public boolean canContinueToUse() {
+        if (this.mob instanceof NpcFollowable followable && followable.isFollowingPlayer()) {
+            return false;
+        }
         BlockPos homePos = this.homePosSupplier.get();
         if (homePos == null) {
             return false;

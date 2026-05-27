@@ -1,6 +1,7 @@
 package com.quickqwek.ciskspawn.entity;
 
 import com.quickqwek.ciskspawn.ai.NpcAnchorReturnGoal;
+import com.quickqwek.ciskspawn.ai.NpcFollowable;
 import com.quickqwek.ciskspawn.ai.NpcShipStabilityGoal;
 import com.quickqwek.ciskspawn.ai.NpcWaypointGoal;
 
@@ -77,7 +78,7 @@ import java.util.UUID;
  * - FTB Quests integration.
  * - Create Aeronautics seat/contraption-specific travel behavior.
  */
-public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
+public class StorykeeperEntity extends PathfinderMob implements GeoEntity, NpcFollowable {
 
     private static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("Idle");
     private static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("Walk");
@@ -194,7 +195,7 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
             progress.trust = Math.min(100, progress.trust + 1);
             String firstMeet = pickFirstMeeting(player);
             String firstMeetBody = withWeatherNote(firstMeet, getWeather());
-            say("Mortimer - Aeromancer", firstMeet, player);
+            sayTagOnly("Mortimer - Aeromancer", firstMeet);
 
             if (player instanceof ServerPlayer serverPlayer) {
                 PacketDistributor.sendToPlayer(serverPlayer, new MortimerDialoguePayload(
@@ -214,7 +215,7 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
         String playerName = player.getName().getString();
         String greeting = pickGreeting(playerName, progress);
         String body = withWeatherNote(buildDialogueBody(playerName, progress), getWeather());
-        say("Mortimer - Aeromancer", greeting, player);
+        sayTagOnly("Mortimer - Aeromancer", greeting);
 
         if (player instanceof ServerPlayer serverPlayer) {
             PacketDistributor.sendToPlayer(serverPlayer, new MortimerDialoguePayload(
@@ -234,9 +235,9 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
             case "scan_seats" -> scanSeatEnvironment(player);
             case "follow" -> askToFollow(player);
             case "talk" -> sendQuestDialogue(player, getProgress(player));
-            case "relationship", "logbook" -> say("Mortimer - Aeromancer", "Use the Crew Logbook for that now. Patchouli finally gave the notes somewhere proper to live.", player);
+            case "relationship", "logbook" -> sendMortimerDialogue(player, "Use the Crew Logbook for that now. Patchouli finally gave the notes somewhere proper to live.");
             case "guild_status" -> guildStatus(player);
-            case "scoria_tracker" -> say("Mortimer - Aeromancer", "Scoria's notes are in the Crew Logbook now. Which is safer than asking me to organize them.", player);
+            case "scoria_tracker" -> sendMortimerDialogue(player, "Scoria's notes are in the Crew Logbook now. Which is safer than asking me to organize them.");
             case "guild_set_anchor" -> setGuildAnchorHere(player);
             case "guild_call_anchor" -> callToGuildAnchor(player);
             case "emote" -> showEmote(randomOf("🔧", "☕", "⚙", "💭", "🧭"));
@@ -355,7 +356,7 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
         manualGuildAnchor = player.blockPosition().immutable();
         guildWorkTarget = manualGuildAnchor;
         guildWorkTicks = 20 * 120;
-        say("Mortimer - Aeromancer", "Right. This is a Guild point now. Inform the paperwork goblins. Actually no, don't. They'll make it official.", player);
+        sendMortimerDialogue(player, "Right. This is a Guild point now. Inform the paperwork goblins. Actually no, don't. They'll make it official.");
         showEmote("⚙");
     }
 
@@ -366,7 +367,7 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
         }
         guildWorkTarget = manualGuildAnchor;
         guildWorkTicks = 20 * 120;
-        say("Mortimer - Aeromancer", "On my way to the Guild point. If anyone says 'meeting minutes', I am leaving.", player);
+        sendMortimerDialogue(player, "On my way to the Guild point. If anyone says 'meeting minutes', I am leaving.");
     }
 
 
@@ -492,8 +493,7 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
     }
 
     private void teaAndTorqueQuest(Player player, PlayerProgress progress) {
-        player.sendSystemMessage(Component.literal("§6[Quest] §eTea and Torque"));
-        player.sendSystemMessage(Component.literal("§fMortimer: §7\"Bring me §bBuilders Tea§7, §bAndesite Alloy§7, and a §bCopper Sheet§7. Can't teach on an empty boiler.\""));
+        String prompt = "Tea and Torque\n\nBring me Builders Tea, two Andesite Alloy, and a Copper Sheet. Can't teach on an empty boiler.";
 
         if (hasItem(player, "create:builders_tea", 1) && hasItem(player, "create:andesite_alloy", 2) && hasItem(player, "create:copper_sheet", 1)) {
             consumeItem(player, "create:builders_tea", 1);
@@ -501,19 +501,14 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
             consumeItem(player, "create:copper_sheet", 1);
             progress.questStage = 1;
             progress.trust = Math.min(100, progress.trust + 8);
-            say("Mortimer - Aeromancer", "Good. Tea, alloy, copper. Civilization in three ingredients.", player);
-            player.sendSystemMessage(Component.literal("§aQuest complete: Tea and Torque"));
-            player.sendSystemMessage(Component.literal("§7New quest unlocked. Right-click Mortimer again."));
-            player.sendSystemMessage(Component.literal("§6[Logbook] §7Dock repair notes added. Mortimer approves of practical parts."));
-            player.sendSystemMessage(Component.literal("§6[Logbook] §7Mortimer trusts your hands a little more. The Abalone thread has begun."));
+            sendMortimerDialogue(player, "Good. Tea, alloy, copper. Civilization in three ingredients.\n\nQuest complete: Tea and Torque.\n\nNew quest unlocked. Right-click Mortimer again.");
         } else {
-            player.sendSystemMessage(Component.literal("§8Needs: create:builders_tea x1, create:andesite_alloy x2, create:copper_sheet x1"));
+            sendMortimerDialogue(player, prompt + "\n\nNeeds: Builders Tea x1, Andesite Alloy x2, Copper Sheet x1.");
         }
     }
 
     private void hullGroansQuest(Player player, PlayerProgress progress) {
-        player.sendSystemMessage(Component.literal("§6[Quest] §eHull Groans"));
-        player.sendSystemMessage(Component.literal("§fMortimer: §7\"The dock's been groaning like a banker asked to share. Bring §bShafts§7, §bCogwheels§7, and §bCopper Ingots§7.\""));
+        String prompt = "Hull Groans\n\nThe dock's been groaning like a banker asked to share. Bring Shafts, Cogwheels, and Copper Ingots.";
 
         if (hasItem(player, "create:shaft", 4) && hasItem(player, "create:cogwheel", 4) && hasItem(player, "minecraft:copper_ingot", 6)) {
             consumeItem(player, "create:shaft", 4);
@@ -521,23 +516,16 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
             consumeItem(player, "minecraft:copper_ingot", 6);
             progress.questStage = 2;
             progress.trust = Math.min(100, progress.trust + 10);
-            say("Mortimer - Aeromancer", "Proper parts. Proper hands. That's how islands stay up.", player);
-            player.sendSystemMessage(Component.literal("§aQuest complete: Hull Groans"));
-            player.sendSystemMessage(Component.literal("§7New quest unlocked. Right-click Mortimer again."));
+            sendMortimerDialogue(player, "Proper parts. Proper hands. That's how islands stay up.\n\nQuest complete: Hull Groans.\n\nNew quest unlocked. Right-click Mortimer again.");
         } else {
-            player.sendSystemMessage(Component.literal("§8Needs: create:shaft x4, create:cogwheel x4, minecraft:copper_ingot x6"));
+            sendMortimerDialogue(player, prompt + "\n\nNeeds: Shaft x4, Cogwheel x4, Copper Ingot x6.");
         }
     }
 
     private void abaloneRevealQuest(Player player, PlayerProgress progress) {
-        player.sendSystemMessage(Component.literal("§6[Quest] §eThe Abalone"));
-        player.sendSystemMessage(Component.literal("§fMortimer: §7\"There's a ship in my hangar. Old girl named the Abalone. Don't laugh. Fried abalone is a noble food.\""));
-        player.sendSystemMessage(Component.literal("§fMortimer: §7\"Someday, if you've the stomach for it, we'll patch her for one last voyage. Not today. Today we start with trust.\""));
         progress.questStage = 3;
         progress.trust = Math.min(100, progress.trust + 12);
-        say("Mortimer - Aeromancer", "The Abalone still has one voyage in her. So do I, if Geera doesn't bolt me to a chair first.", player);
-        player.sendSystemMessage(Component.literal("§aQuest discovered: Restore the Abalone"));
-        player.sendSystemMessage(Component.literal("§8Placeholder: this will become the main repair campaign."));
+        sendMortimerDialogue(player, "There's a ship in my hangar. Old girl named the Abalone. Don't laugh. Fried abalone is a noble food.\n\nSomeday, if you've the stomach for it, we'll patch her for one last voyage. Not today. Today we start with trust.\n\nThe Abalone still has one voyage in her. So do I, if Geera doesn't bolt me to a chair first.\n\nQuest discovered: Restore the Abalone.");
     }
 
     private void afterCurrentQuestChain(Player player, PlayerProgress progress) {
@@ -553,8 +541,7 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
                 "The Guild teaches craft. Banks teach fear with nicer shoes."
         };
         String line = lines[this.random.nextInt(lines.length)];
-        player.sendSystemMessage(Component.literal("§fMortimer: §7\"" + line + "\""));
-        say("Mortimer - Aeromancer", line, player);
+        sendMortimerDialogue(player, line);
     }
 
     public void askToFollow(Player player) {
@@ -562,8 +549,7 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
         this.followTicksLeft = FOLLOW_DURATION_TICKS;
         PlayerProgress progress = getProgress(player);
         progress.trust = Math.min(100, progress.trust + 2);
-        say("Mortimer - Aeromancer", "Fine, I'll keep close. But if you sprint off a ledge, that's a you problem.", player);
-        player.sendSystemMessage(Component.literal("§aMortimer will follow you for a while. Press G near a seat to ask him to board."));
+        sendMortimerDialogue(player, "Fine, I'll keep close. But if you sprint off a ledge, that's a you problem.\n\nMortimer will follow you for a while. Press G near a seat to ask him to board.");
     }
 
     public void tryTravelWith(Player player) {
@@ -576,7 +562,7 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
                 this.targetContraptionSeatIndex = seat.seatIndex;
                 this.requestedBoardingPlayer = player.getUUID();
                 this.getNavigation().moveTo(seat.entity.getX(), seat.entity.getY(), seat.entity.getZ(), 0.9D);
-                say("Mortimer - Aeromancer", "I see the train. Give me a moment.", player);
+                sendMortimerDialogue(player, "I see the train. Give me a moment.");
                 return;
             }
         }
@@ -587,7 +573,7 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
             this.seatedYaw = player.getYRot();
             this.requestedBoardingPlayer = player.getUUID();
             this.getNavigation().moveTo(lookedSeat.getX() + 0.5D, lookedSeat.getY() + 1.0D, lookedSeat.getZ() + 0.5D, 0.85D);
-            say("Mortimer - Aeromancer", "I see the seat. Walking over.", player);
+            sendMortimerDialogue(player, "I see the seat. Walking over.");
             return;
         }
 
@@ -602,13 +588,13 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
         }
         if (playerOnShip) {
             this.followingPlayer = player.getUUID();
-            this.followTicksLeft = 20 * 30;
-            this.getNavigation().moveTo(player.getX(), player.getY(), player.getZ(), 0.9D);
-            say("Mortimer - Aeromancer", "I'll find my footing. Don't launch us until I'm aboard.", player);
+            this.followTicksLeft = FOLLOW_DURATION_TICKS;
+            this.getNavigation().moveTo(player.getX(), player.getY(), player.getZ(), 1.1D);
+            sendMortimerDialogue(player, "I'll find my footing. Don't launch us until I'm aboard.");
             return;
         }
 
-        say("Mortimer - Aeromancer", "Look directly at a seat and try again, or board first if this is an airship.", player);
+        sendMortimerDialogue(player, "Look directly at a seat and try again, or board first if this is an airship.");
     }
 
     private Entity findNearbyOpenSeat(Player player, Entity excludedVehicle) {
@@ -1231,17 +1217,49 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
         }
         followTicksLeft--;
         Player player = this.level().getPlayerByUUID(followingPlayer);
-        if (player == null || player.isRemoved() || player.distanceTo(this) > 80.0F) {
+        if (player == null || player.isRemoved()) {
             followingPlayer = null;
             followTicksLeft = 0;
             return;
         }
+
+        boolean playerOnShipEarly = isTrackedBySable(player);
+        if (!playerOnShipEarly && player.distanceTo(this) > 80.0F) {
+            followingPlayer = null;
+            followTicksLeft = 0;
+            return;
+        }
+
         double dist = this.distanceToSqr(player);
-        if (dist > 6.25D) {
-            this.getNavigation().moveTo(player, dist > 64.0D ? 1.05D : 0.8D);
+        boolean playerOnShip = playerOnShipEarly;
+        boolean mortimerOnShip = isTrackedBySable(this);
+
+        if (mortimerOnShip) {
+            this.getNavigation().stop();
+            this.getLookControl().setLookAt(player, 20.0F, 20.0F);
+        } else if (dist > 6.25D || playerOnShip) {
+            double speed = dist > 64.0D ? 1.1D : (playerOnShip ? 1.0D : 0.8D);
+            this.getNavigation().moveTo(player, speed);
         } else {
             this.getNavigation().stop();
             this.getLookControl().setLookAt(player, 20.0F, 20.0F);
+        }
+    }
+
+    @Override
+    public boolean isFollowingPlayer() {
+        return followingPlayer != null && followTicksLeft > 0;
+    }
+
+    private boolean isTrackedBySable(Entity entity) {
+        NpcShipStabilityGoal.initReflection();
+        if (NpcShipStabilityGoal.sableHelper == null || NpcShipStabilityGoal.getTrackingSubLevel == null) {
+            return false;
+        }
+        try {
+            return NpcShipStabilityGoal.getTrackingSubLevel.invoke(NpcShipStabilityGoal.sableHelper, entity) != null;
+        } catch (Exception ignored) {
+            return false;
         }
     }
 
@@ -1410,6 +1428,26 @@ public class StorykeeperEntity extends PathfinderMob implements GeoEntity {
 
     private void say(String speaker, String text) {
         say(speaker, text, null);
+    }
+
+    private void sayTagOnly(String speaker, String text) {
+        this.setCustomName(Component.literal("§6" + speaker + "§f: " + text));
+        this.setCustomNameVisible(true);
+        this.speechTicksLeft = SPEECH_TICKS;
+    }
+
+    private void sendMortimerDialogue(Player player, String body) {
+        sayTagOnly("Mortimer - Aeromancer", body);
+        if (player instanceof ServerPlayer serverPlayer) {
+            PacketDistributor.sendToPlayer(serverPlayer, new MortimerDialoguePayload(
+                    this.getId(),
+                    "Mortimer - Aeromancer",
+                    body,
+                    "Discuss work",
+                    "Travel / Board",
+                    "Mortimer waits for your answer."
+            ));
+        }
     }
 
     private void say(String speaker, String text, Player listener) {

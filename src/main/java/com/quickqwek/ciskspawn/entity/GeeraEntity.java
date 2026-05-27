@@ -62,6 +62,9 @@ public class GeeraEntity extends PathfinderMob implements GeoEntity {
     private final Map<UUID, PlayerProgress> progressByPlayer = new HashMap<>();
     private int ambientCooldown = 20 * 154;
     private BlockPos homePos = null;
+    private UUID lastDialoguePlayer = null;
+    private long lastDialogueTick = Long.MIN_VALUE;
+    private String lastDialogueBody = "";
     private int coupleCooldown = 20 * 25;
     private int routineCooldown = 20 * 60;
     private int speechTicksLeft = 0;
@@ -505,10 +508,41 @@ public class GeeraEntity extends PathfinderMob implements GeoEntity {
     }
 
     private void say(Player player, String text) {
+        sayTagOnly(text);
+        sendDialogue(player, text);
+    }
+
+    private void sayTagOnly(String text) {
         this.setCustomName(Component.literal("§2Geera§f: " + text));
         this.setCustomNameVisible(true);
         this.speechTicksLeft = SPEECH_TICKS;
-        player.displayClientMessage(Component.literal("§2Geera§7: " + text), false);
+    }
+
+    private void sendDialogue(Player player, String body) {
+        body = appendDialogueBody(player, body);
+        if (player instanceof ServerPlayer serverPlayer) {
+            PacketDistributor.sendToPlayer(serverPlayer, new MortimerDialoguePayload(
+                    this.getId(),
+                    "Geera - Fisherwoman",
+                    body,
+                    "Fishing work",
+                    "Open shop",
+                    "Geera waits for your answer."
+            ));
+        }
+    }
+
+    private String appendDialogueBody(Player player, String line) {
+        UUID playerId = player.getUUID();
+        long tick = this.level().getGameTime();
+        if (playerId.equals(lastDialoguePlayer) && tick == lastDialogueTick) {
+            lastDialogueBody = lastDialogueBody + "\n\n" + line;
+        } else {
+            lastDialogueBody = line;
+        }
+        lastDialoguePlayer = playerId;
+        lastDialogueTick = tick;
+        return lastDialogueBody;
     }
 
     private void sayNearby(String text) {

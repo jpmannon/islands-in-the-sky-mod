@@ -55,6 +55,9 @@ public class AzerionEntity extends PathfinderMob implements GeoEntity {
     private int drillsCompleted = 0;
     private int ambientCooldown = 20 * 154;
     private BlockPos homePos = null;
+    private UUID lastDialoguePlayer = null;
+    private long lastDialogueTick = Long.MIN_VALUE;
+    private String lastDialogueBody = "";
     private int speechTicksLeft = 0;
 
     public AzerionEntity(EntityType<? extends PathfinderMob> type, Level level) {
@@ -210,7 +213,7 @@ public class AzerionEntity extends PathfinderMob implements GeoEntity {
                 drillsCompleted++;
                 progress.drillStage = 4;
                 artilleryStage = Math.max(artilleryStage, 4);
-                player.displayClientMessage(Component.literal("§6[Logbook] §7Azerion has certified you for standard single-round cannon operation."), false);
+                say(player, "Logbook update: Azerion has certified you for standard single-round cannon operation.");
             }
             default -> say(player, "You have completed the standard drill sequence. Live fire parameters are documented. Return if you have operational questions.");
         }
@@ -244,10 +247,41 @@ public class AzerionEntity extends PathfinderMob implements GeoEntity {
     }
 
     private void say(Player player, String text) {
+        sayTagOnly(text);
+        sendDialogue(player, text);
+    }
+
+    private void sayTagOnly(String text) {
         this.setCustomName(Component.literal("§7Azerion§f: " + text));
         this.setCustomNameVisible(true);
         this.speechTicksLeft = 20 * 7;
-        player.displayClientMessage(Component.literal("§7Azerion§7: " + text), false);
+    }
+
+    private void sendDialogue(Player player, String body) {
+        body = appendDialogueBody(player, body);
+        if (player instanceof ServerPlayer serverPlayer) {
+            PacketDistributor.sendToPlayer(serverPlayer, new MortimerDialoguePayload(
+                    this.getId(),
+                    "Azerion Rook - AZ Mk 9",
+                    body,
+                    "Begin cannon drill",
+                    "Operational query",
+                    "Azerion awaits your next instruction."
+            ));
+        }
+    }
+
+    private String appendDialogueBody(Player player, String line) {
+        UUID playerId = player.getUUID();
+        long tick = this.level().getGameTime();
+        if (playerId.equals(lastDialoguePlayer) && tick == lastDialogueTick) {
+            lastDialogueBody = lastDialogueBody + "\n\n" + line;
+        } else {
+            lastDialogueBody = line;
+        }
+        lastDialoguePlayer = playerId;
+        lastDialogueTick = tick;
+        return lastDialogueBody;
     }
 
     @Override

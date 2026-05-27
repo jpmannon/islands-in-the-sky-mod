@@ -60,6 +60,9 @@ public class ScoriaEntity extends PathfinderMob implements GeoEntity {
     private int projectSessions = 0;
     private int ambientCooldown = 20 * 154;
     private BlockPos homePos = null;
+    private UUID lastDialoguePlayer = null;
+    private long lastDialogueTick = Long.MIN_VALUE;
+    private String lastDialogueBody = "";
     private int projectCooldown = 20 * 40;
     private BlockPos manualProjectAnchor = null;
     private BlockPos projectTarget = null;
@@ -340,10 +343,41 @@ public class ScoriaEntity extends PathfinderMob implements GeoEntity {
     }
 
     private void say(Player player, String text) {
+        sayTagOnly(text);
+        sendDialogue(player, text);
+    }
+
+    private void sayTagOnly(String text) {
         this.setCustomName(Component.literal("§bScoria§f: " + text));
         this.setCustomNameVisible(true);
         this.speechTicksLeft = 20 * 7;
-        player.displayClientMessage(Component.literal("§bScoria§7: " + text), false);
+    }
+
+    private void sendDialogue(Player player, String body) {
+        body = appendDialogueBody(player, body);
+        if (player instanceof ServerPlayer serverPlayer) {
+            PacketDistributor.sendToPlayer(serverPlayer, new MortimerDialoguePayload(
+                    this.getId(),
+                    "Scoria - Apprentice",
+                    body,
+                    "Engineering lesson",
+                    "About Mortimer",
+                    "Scoria is watching for your reaction."
+            ));
+        }
+    }
+
+    private String appendDialogueBody(Player player, String line) {
+        UUID playerId = player.getUUID();
+        long tick = this.level().getGameTime();
+        if (playerId.equals(lastDialoguePlayer) && tick == lastDialogueTick) {
+            lastDialogueBody = lastDialogueBody + "\n\n" + line;
+        } else {
+            lastDialogueBody = line;
+        }
+        lastDialoguePlayer = playerId;
+        lastDialogueTick = tick;
+        return lastDialogueBody;
     }
 
     private void showEmote(String icon) {

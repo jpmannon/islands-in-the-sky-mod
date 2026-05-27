@@ -49,6 +49,9 @@ public class ZiikoEntity extends PathfinderMob implements GeoEntity {
     private int speechTicksLeft = 0;
     private int ambientCooldown = 20 * 154;
     private BlockPos homePos = null;
+    private UUID lastDialoguePlayer = null;
+    private long lastDialogueTick = Long.MIN_VALUE;
+    private String lastDialogueBody = "";
 
     public ZiikoEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
@@ -298,10 +301,41 @@ public class ZiikoEntity extends PathfinderMob implements GeoEntity {
     }
 
     private void say(Player player, String text) {
+        sayTagOnly(text);
+        sendDialogue(player, text);
+    }
+
+    private void sayTagOnly(String text) {
         this.setCustomName(Component.literal("§6Zii-ko§f: " + text));
         this.setCustomNameVisible(true);
         this.speechTicksLeft = 20 * 7;
-        player.displayClientMessage(Component.literal("§6Zii-ko§7: " + text), false);
+    }
+
+    private void sendDialogue(Player player, String body) {
+        body = appendDialogueBody(player, body);
+        if (player instanceof ServerPlayer serverPlayer) {
+            PacketDistributor.sendToPlayer(serverPlayer, new MortimerDialoguePayload(
+                    this.getId(),
+                    "Zii-ko - Smith",
+                    body,
+                    "Bring materials",
+                    "Ask about materials",
+                    "Zii-ko waits with bright expectation."
+            ));
+        }
+    }
+
+    private String appendDialogueBody(Player player, String line) {
+        UUID playerId = player.getUUID();
+        long tick = this.level().getGameTime();
+        if (playerId.equals(lastDialoguePlayer) && tick == lastDialogueTick) {
+            lastDialogueBody = lastDialogueBody + "\n\n" + line;
+        } else {
+            lastDialogueBody = line;
+        }
+        lastDialoguePlayer = playerId;
+        lastDialogueTick = tick;
+        return lastDialogueBody;
     }
 
     private void sayNearby(String text) {
